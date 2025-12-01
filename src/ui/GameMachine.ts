@@ -41,7 +41,7 @@ export class GameMachine {
 
   public setOpacity(dimmed: boolean): void {
     this.dimmed = dimmed;
-    this.container.alpha = dimmed ? 0.3 : 1;
+    this.tilesLayer.alpha = dimmed ? 0.3 : 1;
   }
 
   public skipAnimation(): void {
@@ -61,7 +61,6 @@ export class GameMachine {
       graphic.beginFill(colour);
       graphic.drawRect(x, y, layout.size, layout.size);
       graphic.endFill();
-      graphic.alpha = this.dimmed ? 0.3 : 1;
       this.tilesLayer.addChild(graphic);
 
       const sprite = this.createSymbolSprite(tile, layout.size);
@@ -183,7 +182,6 @@ export class GameMachine {
       graphic.beginFill(colour);
       graphic.drawRect(x, y, layout.size, layout.size);
       graphic.endFill();
-      graphic.alpha = this.dimmed ? 0.3 : 1;
       this.tilesLayer.addChild(graphic);
     });
   }
