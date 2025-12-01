@@ -12,8 +12,8 @@
     { "symbolType": "SOLDIER", "minCount": 1, "resetToSpins": 3 }
   ],
   "symbolDistribution": {
-    "empty": 0.98,
-    "coin": 0.015,
+    "empty": 0.97,
+    "coin": 0.025,
     "soldier": 0.005
   },
   "coinValueDistribution": {
