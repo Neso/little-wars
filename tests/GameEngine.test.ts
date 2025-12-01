@@ -10,7 +10,14 @@ describe('GameEngine', () => {
   it('awards coin payout when colours match and keeps ownership', () => {
     const symbols: Symbol[] = emptySymbols(30);
     symbols[0] = { type: 'COIN', colour: 'GREEN', value: 2 };
-    const engine = new GameEngine(config, new FixedSymbolSource(symbols));
+    const configOverride = {
+      ...config,
+      coinValueDistribution: {
+        GREEN: { onOwn: [{ value: 2, weight: 1 }], onOpposite: [{ value: 2, weight: 1 }] },
+        ORANGE: { onOwn: [{ value: 2, weight: 1 }], onOpposite: [{ value: 2, weight: 1 }] }
+      }
+    };
+    const engine = new GameEngine(configOverride, new FixedSymbolSource(symbols));
 
     const state = engine.spin();
 

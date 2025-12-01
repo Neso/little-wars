@@ -69,7 +69,7 @@ export class WeightedSymbolSource implements SymbolSource {
   }
 
   private randomCoinValue(colour: Colour): number {
-    const dist = this.coinDistribution[colour];
+    const dist = this.coinDistribution[colour].onOwn; // default sample; actual payout uses context in GameEngine
     const total = dist.reduce((sum, c) => sum + c.weight, 0);
     let roll = this.rng() * total;
     for (const entry of dist) {
@@ -90,11 +90,13 @@ export class WeightedSymbolSource implements SymbolSource {
 
   private validateCoinDistribution(distribution: CoinValueDistribution): void {
     (['GREEN', 'ORANGE'] as const).forEach((colour) => {
-      const dist = distribution[colour];
-      const total = dist.reduce((sum, c) => sum + c.weight, 0);
-      if (total <= 0) {
-        throw new Error(`Coin value distribution for ${colour} must have positive weights.`);
-      }
+      ['onOwn', 'onOpposite'].forEach((key) => {
+        const dist = distribution[colour][key as 'onOwn' | 'onOpposite'];
+        const total = dist.reduce((sum, c) => sum + c.weight, 0);
+        if (total <= 0) {
+          throw new Error(`Coin value distribution for ${colour} (${key}) must have positive weights.`);
+        }
+      });
     });
   }
 }

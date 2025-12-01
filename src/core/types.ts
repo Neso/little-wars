@@ -30,7 +30,12 @@ export interface CoinValueWeight {
   weight: number;
 }
 
-export type CoinValueDistribution = Record<Colour, CoinValueWeight[]>;
+export interface CoinValueDistributionPerMatch {
+  onOwn: CoinValueWeight[];
+  onOpposite: CoinValueWeight[];
+}
+
+export type CoinValueDistribution = Record<Colour, CoinValueDistributionPerMatch>;
 
 export interface GameConfig {
   startingBalance: number;

@@ -47,22 +47,22 @@ const resize = (): void => {
 
 resize();
 window.addEventListener('resize', resize);
-view.addEventListener('click', () => {
-  ui.skipAnimation();
+const triggerSpinOrSkip = () => {
   const state = engine.getState();
-  if (!state.roundActive || state.remainingSpins <= 0) {
+  if (ui.isAnimating()) {
+    ui.skipAnimation();
+    return;
+  }
+  if (!state.roundActive || state.remainingSpins > 0) {
     ui.spin();
   }
-});
+};
+
+view.addEventListener('click', triggerSpinOrSkip);
 
 window.addEventListener('keydown', (e) => {
   if (e.code === 'Space') {
     e.preventDefault();
-    const state = engine.getState();
-    if (ui['animating']) {
-      ui.skipAnimation();
-    } else if (!state.roundActive || state.remainingSpins <= 0) {
-      ui.spin();
-    }
+    triggerSpinOrSkip();
   }
 });

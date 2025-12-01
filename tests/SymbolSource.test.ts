@@ -13,8 +13,8 @@ const sharedCoinWeights: CoinValueWeight[] = [
 ];
 
 const coinDistribution: CoinValueDistribution = {
-  GREEN: sharedCoinWeights,
-  ORANGE: sharedCoinWeights
+  GREEN: { onOwn: sharedCoinWeights, onOpposite: sharedCoinWeights },
+  ORANGE: { onOwn: sharedCoinWeights, onOpposite: sharedCoinWeights }
 };
 
 describe('WeightedSymbolSource', () => {

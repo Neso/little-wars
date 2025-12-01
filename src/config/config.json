@@ -17,22 +17,42 @@
     "soldier": 0.005
   },
   "coinValueDistribution": {
-    "GREEN": [
-      { "value": 1, "weight": 0.3 },
-      { "value": 2, "weight": 0.25 },
-      { "value": 3, "weight": 0.25 },
-      { "value": 25, "weight": 0.1 },
-      { "value": 50, "weight": 0.05 },
-      { "value": 100, "weight": 0.05 }
-    ],
-    "ORANGE": [
-      { "value": 1, "weight": 0.3 },
-      { "value": 2, "weight": 0.25 },
-      { "value": 3, "weight": 0.25 },
-      { "value": 25, "weight": 0.1 },
-      { "value": 50, "weight": 0.05 },
-      { "value": 100, "weight": 0.05 }
-    ]
+    "GREEN": {
+      "onOwn": [
+        { "value": 1, "weight": 0.3 },
+        { "value": 2, "weight": 0.25 },
+        { "value": 3, "weight": 0.25 },
+        { "value": 25, "weight": 0.1 },
+        { "value": 50, "weight": 0.05 },
+        { "value": 100, "weight": 0.05 }
+      ],
+      "onOpposite": [
+        { "value": 1, "weight": 0.10 },
+        { "value": 2, "weight": 0.15 },
+        { "value": 3, "weight": 0.25},
+        { "value": 25, "weight": 0.20 },
+        { "value": 50, "weight": 0.20 },
+        { "value": 100, "weight": 0.10 }
+      ]
+    },
+    "ORANGE": {
+      "onOwn": [
+        { "value": 1, "weight": 0.3 },
+        { "value": 2, "weight": 0.25 },
+        { "value": 3, "weight": 0.25 },
+        { "value": 25, "weight": 0.1 },
+        { "value": 50, "weight": 0.05 },
+        { "value": 100, "weight": 0.05 }
+      ],
+      "onOpposite": [
+        { "value": 1, "weight": 0.10 },
+        { "value": 2, "weight": 0.15 },
+        { "value": 3, "weight": 0.25},
+        { "value": 25, "weight": 0.20 },
+        { "value": 50, "weight": 0.20 },
+        { "value": 100, "weight": 0.10 }
+      ]
+    }
   },
   "multipliers": {
     "GREEN": [

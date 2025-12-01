@@ -51,6 +51,10 @@ export class MainUI {
     }
   }
 
+  public isAnimating(): boolean {
+    return this.animating;
+  }
+
   private async handleSpin(): Promise<void> {
     if (this.animating) {
       return;

@@ -122,11 +122,14 @@ export class GameEngine {
       }
       if (tile.colour === symbol.colour) {
         const multiplier = this.state.multipliers[symbol.colour];
-        const win = this.state.bet * multiplier * symbol.value;
+        const value = this.pickCoinValue(symbol.colour, true);
+        const win = this.state.bet * multiplier * value;
         this.state.totalWin += win;
         this.state.lastSpinWin = (this.state.lastSpinWin ?? 0) + win;
         this.state.lastSpinPayouts?.push({ tileId: tile.id, amount: win });
       } else {
+        const value = this.pickCoinValue(symbol.colour, false);
+        // no payout on flip per spec; but if behaviour changes, value is available
         this.board.setTileColour(tile.id, symbol.colour);
       }
     });
@@ -166,6 +169,21 @@ export class GameEngine {
       }
     });
     this.state.remainingSpins = updatedSpins;
+  }
+
+  private pickCoinValue(colour: 'GREEN' | 'ORANGE', onOwn: boolean): number {
+    const dist = onOwn
+      ? this.config.coinValueDistribution[colour].onOwn
+      : this.config.coinValueDistribution[colour].onOpposite;
+    const total = dist.reduce((sum, c) => sum + c.weight, 0);
+    let roll = Math.random() * total;
+    for (const entry of dist) {
+      if (roll < entry.weight) {
+        return entry.value;
+      }
+      roll -= entry.weight;
+    }
+    return dist[dist.length - 1].value;
   }
 
   private finishRoundIfNeeded(): void {

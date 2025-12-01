@@ -153,8 +153,8 @@ export interface GameConfig {
     soldier: number;  // probability 0-1
   };
   coinValueDistribution: {
-    GREEN: { value: number; weight: number }[];  // weights normalized internally
-    ORANGE: { value: number; weight: number }[];
+    GREEN: { onOwn: { value: number; weight: number }[]; onOpposite: { value: number; weight: number }[] };
+    ORANGE: { onOwn: { value: number; weight: number }[]; onOpposite: { value: number; weight: number }[] };
   };
 }
 ```
@@ -181,22 +181,42 @@ export interface GameConfig {
     "soldier": 0.15
   },
   "coinValueDistribution": {
-    "GREEN": [
-      { "value": 1, "weight": 0.3 },
-      { "value": 2, "weight": 0.25 },
-      { "value": 3, "weight": 0.25 },
-      { "value": 25, "weight": 0.1 },
-      { "value": 50, "weight": 0.05 },
-      { "value": 100, "weight": 0.05 }
-    ],
-    "ORANGE": [
-      { "value": 1, "weight": 0.3 },
-      { "value": 2, "weight": 0.25 },
-      { "value": 3, "weight": 0.25 },
-      { "value": 25, "weight": 0.1 },
-      { "value": 50, "weight": 0.05 },
-      { "value": 100, "weight": 0.05 }
-    ]
+    "GREEN": {
+      "onOwn": [
+        { "value": 1, "weight": 0.3 },
+        { "value": 2, "weight": 0.25 },
+        { "value": 3, "weight": 0.25 },
+        { "value": 25, "weight": 0.1 },
+        { "value": 50, "weight": 0.05 },
+        { "value": 100, "weight": 0.05 }
+      ],
+      "onOpposite": [
+        { "value": 1, "weight": 0.5 },
+        { "value": 2, "weight": 0.2 },
+        { "value": 3, "weight": 0.2 },
+        { "value": 25, "weight": 0.05 },
+        { "value": 50, "weight": 0.03 },
+        { "value": 100, "weight": 0.02 }
+      ]
+    },
+    "ORANGE": {
+      "onOwn": [
+        { "value": 1, "weight": 0.3 },
+        { "value": 2, "weight": 0.25 },
+        { "value": 3, "weight": 0.25 },
+        { "value": 25, "weight": 0.1 },
+        { "value": 50, "weight": 0.05 },
+        { "value": 100, "weight": 0.05 }
+      ],
+      "onOpposite": [
+        { "value": 1, "weight": 0.5 },
+        { "value": 2, "weight": 0.2 },
+        { "value": 3, "weight": 0.2 },
+        { "value": 25, "weight": 0.05 },
+        { "value": 50, "weight": 0.03 },
+        { "value": 100, "weight": 0.02 }
+      ]
+    }
   },
   "multipliers": {
     "GREEN": [
@@ -441,7 +461,7 @@ export interface GameServerClient {
 - Core modules live under `src/core` (engine, board, symbol source, types). UI scaffolding sits in `src/ui`, rendering helpers in `src/render`, audio stubs in `src/audio`, and configuration in `src/config`.
 - Configurable thresholds and spin reset rules live in `src/config/config.json`; keep multipliers sorted by `tilesRequired`.
 - Symbol PAR reel probabilities live in `config.json` under `symbolDistribution`. Default is 70% EMPTY, 15% COIN, 15% SOLDIER; values must sum to 1.
-- Coin value probabilities live in `coinValueDistribution` per colour; default weights align with 1 (30%), 2 (25%), 3 (25%), 25 (10%), 50 (5%), 100 (5%) for both GREEN and ORANGE. Weights are normalized internally.
+- Coin value probabilities live in `coinValueDistribution` per colour, split for landing on own colour vs flipping an opposite tile. Defaults mirror prior weights for onOwn, with higher small-coin weights on opposite flips.
 - Rendering is responsive: the Pixi canvas resizes to its parent, and the 6×5 grid scales to fill available space while preserving aspect ratio.
 - Tests live in `tests` and should favour deterministic symbol sources for predictable outcomes.
 - HUD shows balance, total win, current spin win, bet, spins, tiles, and multipliers; top bar highlights tiles/multipliers, bottom bar carries other values and spin control. Cascading spins dim tiles and drop symbols per column; click on the grid to skip animation.
