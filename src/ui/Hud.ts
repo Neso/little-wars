@@ -3,6 +3,7 @@ import { GameState } from '@core/types';
 export class Hud {
   private balanceEl: HTMLElement | null;
   private totalWinEl: HTMLElement | null;
+  private spinWinEl: HTMLElement | null;
   private betEl: HTMLElement | null;
   private spinsEl: HTMLElement | null;
   private tilesEl: HTMLElement | null;
@@ -13,6 +14,7 @@ export class Hud {
   constructor(onSpin?: () => void) {
     this.balanceEl = document.getElementById('hud-balance');
     this.totalWinEl = document.getElementById('hud-totalwin');
+    this.spinWinEl = document.getElementById('hud-spinwin');
     this.betEl = document.getElementById('hud-bet');
     this.spinsEl = document.getElementById('hud-spins');
     this.tilesEl = document.getElementById('hud-tiles');
@@ -31,6 +33,7 @@ export class Hud {
   public update(state: GameState): void {
     this.balanceEl && (this.balanceEl.textContent = state.balance.toString());
     this.totalWinEl && (this.totalWinEl.textContent = state.totalWin.toString());
+    this.spinWinEl && (this.spinWinEl.textContent = state.lastSpinWin?.toString() ?? '0');
     this.betEl && (this.betEl.textContent = state.bet.toString());
     this.spinsEl &&
       (this.spinsEl.textContent = `${state.remainingSpins}/${state.maxSpinsPerRound}`);

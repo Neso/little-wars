@@ -15,6 +15,7 @@ describe('GameEngine', () => {
     const state = engine.spin();
 
     expect(state.totalWin).toBe(2); // bet 1 * multiplier 1 * value 2
+    expect(state.lastSpinWin).toBe(2);
     expect(state.balance).toBe(999); // bet deducted once
     expect(state.greenTileCount).toBe(15);
     expect(state.orangeTileCount).toBe(15);

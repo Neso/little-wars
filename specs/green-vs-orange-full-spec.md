@@ -280,6 +280,7 @@ export interface GameState {
   balance: number;
   bet: number;
   totalWin: number;
+  lastSpinWin?: number;
   remainingSpins: number;
   maxSpinsPerRound: number;
   greenTileCount: number;
@@ -443,6 +444,7 @@ export interface GameServerClient {
 - Coin value probabilities live in `coinValueDistribution` per colour; default weights align with 1 (30%), 2 (25%), 3 (25%), 25 (10%), 50 (5%), 100 (5%) for both GREEN and ORANGE. Weights are normalized internally.
 - Rendering is responsive: the Pixi canvas resizes to its parent, and the 6×5 grid scales to fill available space while preserving aspect ratio.
 - Tests live in `tests` and should favour deterministic symbol sources for predictable outcomes.
+- HUD shows balance, total win, current spin win, bet, spins, tiles, and multipliers; top bar highlights tiles/multipliers, bottom bar carries other values and spin control. Cascading spins dim tiles and drop symbols per column; click on the grid to skip animation.
 - Correct end-of-round behaviour
 - Correct UI updating
 - Bet constraints enforced
