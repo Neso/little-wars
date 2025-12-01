@@ -24,6 +24,7 @@ export class GameMachine {
   private flickerLayer: Container;
   private symbolsLayer: Container;
   private payoutLayer: Container;
+  private tankLayer: Container;
   private dimmed = false;
   private viewportWidth = 320;
   private viewportHeight = 280;
@@ -41,6 +42,8 @@ export class GameMachine {
     this.container.addChild(this.symbolsLayer);
     this.payoutLayer = new Container();
     this.container.addChild(this.payoutLayer);
+    this.tankLayer = new Container();
+    this.container.addChild(this.tankLayer);
     this.app.stage.addChild(this.container);
   }
 
@@ -128,9 +131,12 @@ export class GameMachine {
     });
 
     let resolved = false;
-    const finalize = () => {
+    const tankTiles = tiles.filter((t) => t.symbol?.type === 'TANK');
+
+    const finalize = async () => {
       if (resolved) return;
       resolved = true;
+      await this.playTankOverlay(tankTiles, tiles, layout);
       this.container.removeChild(overlay);
       this.setOpacity(false);
       this.update(tiles, payouts, multipliers);
@@ -319,5 +325,68 @@ export class GameMachine {
       }
     };
     toggle();
+  }
+
+  private playTankOverlay(
+    tankTiles: Tile[],
+    tiles: Tile[],
+    layout: { offsetX: number; offsetY: number; tileSize: number; padding: number; size: number }
+  ): Promise<void> {
+    this.tankLayer.removeChildren();
+    if (!tankTiles.length) return Promise.resolve();
+    const maxCol = Math.max(...tiles.map((t) => t.col));
+
+    const animations = tankTiles.map((tank) => {
+      return new Promise<void>((resolve) => {
+        const startPos = this.positionFor(tank, layout);
+        const sprite = new Sprite(textures.tank[tank.symbol?.colour === 'ORANGE' ? 'ORANGE' : 'GREEN']);
+        const desired = layout.size * 0.8;
+        const scale = desired / Math.max(sprite.texture.width, sprite.texture.height);
+        sprite.width = sprite.texture.width * scale;
+        sprite.height = sprite.texture.height * scale;
+        sprite.x = startPos.x + (layout.size - sprite.width) / 2;
+        sprite.y = startPos.y + (layout.size - sprite.height) / 2;
+        this.tankLayer.addChild(sprite);
+
+        for (let c = tank.col; c <= maxCol; c++) {
+          setTimeout(() => {
+            const { x, y } = this.positionFor(
+              { ...tank, col: c } as Tile,
+              layout
+            );
+            const flash = new Graphics();
+            flash.beginFill(0xffffff, 0.4);
+            flash.drawRect(x, y, layout.size, layout.size);
+            flash.endFill();
+            this.tankLayer.addChild(flash);
+            setTimeout(() => this.tankLayer.removeChild(flash), 100);
+          }, (c - tank.col) * 80);
+        }
+
+        const endX =
+          layout.offsetX +
+          maxCol * layout.tileSize +
+          layout.padding +
+          (layout.size - sprite.width) / 2;
+        const distance = endX - sprite.x;
+        const duration = 500;
+        const startTime = performance.now();
+        const animate = (now: number) => {
+          const t = Math.min(1, (now - startTime) / duration);
+          const eased = 1 - Math.pow(1 - t, 2);
+          sprite.x = sprite.x + distance * eased;
+          if (t < 1) {
+            requestAnimationFrame(animate);
+          } else {
+            resolve();
+          }
+        };
+        requestAnimationFrame(animate);
+      });
+    });
+
+    return Promise.all(animations).then(() => {
+      this.tankLayer.removeChildren();
+    });
   }
 }
