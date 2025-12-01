@@ -94,15 +94,19 @@ export class GameMachine {
   public animateSpin(
     tiles: Tile[],
     payouts?: { tileId: string; amount: number }[],
+    prevTiles?: Tile[],
     durationMs = 500,
     columnDelayMs = 120
   ): Promise<void> {
     const layout = this.computeLayout(tiles);
+    if (prevTiles) {
+      this.lastColours = new Map(prevTiles.map((t) => [t.id, t.colour]));
+    }
     this.skipRequested = false;
     this.tilesLayer.removeChildren();
     this.symbolsLayer.removeChildren();
     this.setOpacity(true);
-    this.drawTilesOnly(tiles, layout);
+    this.drawTilesOnly(prevTiles ?? tiles, layout);
 
     const overlay = new Container();
     this.container.addChild(overlay);
@@ -236,7 +240,7 @@ export class GameMachine {
       const tile = tileMap.get(payout.tileId);
       if (!tile) return;
       const { x, y } = this.positionFor(tile, layout);
-      const txt = new Text(`+${payout.amount}`, new TextStyle({ fill: '#ffffff', fontSize: 22, fontWeight: '800' }));
+      const txt = new Text(`+${payout.amount}`, new TextStyle({ fill: '#ffffff', fontSize: 44, fontWeight: '900' }));
       txt.x = x + layout.size / 2 - txt.width / 2;
       txt.y = y + layout.size / 2 - txt.height / 2;
       this.payoutLayer.addChild(txt);

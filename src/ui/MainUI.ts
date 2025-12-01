@@ -57,9 +57,10 @@ export class MainUI {
     }
     this.animating = true;
     this.gameMachine.setOpacity(true);
+    const prevTiles = this.engine.getState().tiles;
     const newState = this.engine.spin();
     this.syncUI(newState, { skipBoard: true });
-    await this.gameMachine.animateSpin(newState.tiles, newState.lastSpinPayouts);
+    await this.gameMachine.animateSpin(newState.tiles, newState.lastSpinPayouts, prevTiles);
     this.gameMachine.setOpacity(false);
     this.animating = false;
   }
