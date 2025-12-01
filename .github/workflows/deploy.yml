@@ -22,25 +22,22 @@ jobs:
         with:
           node-version: 20
           cache: npm
-          cache-dependency-path: little-wars/package-lock.json
+          cache-dependency-path: package-lock.json
 
       - name: Install dependencies
-        working-directory: little-wars
         run: npm ci
 
       - name: Run tests
-        working-directory: little-wars
         run: npm test
 
       - name: Build
-        working-directory: little-wars
         run: npm run build
 
       - name: Upload artifact
         uses: actions/upload-artifact@v4
         with:
           name: dist
-          path: little-wars/dist
+          path: dist
 
   deploy:
     needs: build
