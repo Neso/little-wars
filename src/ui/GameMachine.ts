@@ -239,10 +239,9 @@ export class GameMachine {
     container.addChild(sprite);
 
     if (symbol?.type === 'COIN') {
-      const mult = multipliers[symbol.colour] ?? 1;
       const label = new Text(
-        `x${mult}`,
-        new TextStyle({ fill: '#fff', fontSize: 22, fontWeight: '900', stroke: '#000', strokeThickness: 4 })
+        `${symbol.value ?? ''}`,
+        new TextStyle({ fill: '#fff', fontSize: 24, fontWeight: '900', stroke: '#000', strokeThickness: 4 })
       );
       label.x = sprite.width / 2 - label.width / 2;
       label.y = sprite.height - label.height;

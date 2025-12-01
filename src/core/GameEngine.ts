@@ -120,16 +120,17 @@ export class GameEngine {
       if (!tile) {
         return;
       }
+      const onOwnColour = tile.colour === symbol.colour;
+      const coinValue = symbol.value ?? this.pickCoinValue(symbol.colour, onOwnColour);
+      // Persist the effective coin value on the board symbol so UI can display it.
+      this.board.setTileSymbol(tile.id, { ...symbol, value: coinValue });
       if (tile.colour === symbol.colour) {
         const multiplier = this.state.multipliers[symbol.colour];
-        const value = this.pickCoinValue(symbol.colour, true);
-        const win = this.state.bet * multiplier * value;
+        const win = this.state.bet * multiplier * coinValue;
         this.state.totalWin += win;
         this.state.lastSpinWin = (this.state.lastSpinWin ?? 0) + win;
         this.state.lastSpinPayouts?.push({ tileId: tile.id, amount: win });
       } else {
-        const value = this.pickCoinValue(symbol.colour, false);
-        // no payout on flip per spec; but if behaviour changes, value is available
         this.board.setTileColour(tile.id, symbol.colour);
       }
     });
