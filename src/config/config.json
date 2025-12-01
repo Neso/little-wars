@@ -37,14 +37,14 @@
   "multipliers": {
     "GREEN": [
       { "tilesRequired": 0, "multiplier": 1 },
-      { "tilesRequired": 18, "multiplier": 2 },
-      { "tilesRequired": 20, "multiplier": 3 },
-      { "tilesRequired": 25, "multiplier": 5 },
-      { "tilesRequired": 30, "multiplier": 10 }
+      { "tilesRequired": 16, "multiplier": 2 },
+      { "tilesRequired": 18, "multiplier": 3 },
+      { "tilesRequired": 20, "multiplier": 5 },
+      { "tilesRequired": 25, "multiplier": 10 }
     ],
     "ORANGE": [
       { "tilesRequired": 0, "multiplier": 1 },
-      { "tilesRequired": 18, "multiplier": 2 },
+      { "tilesRequired": 14, "multiplier": 2 },
       { "tilesRequired": 20, "multiplier": 3 },
       { "tilesRequired": 25, "multiplier": 5 },
       { "tilesRequired": 30, "multiplier": 10 }
