@@ -441,6 +441,7 @@ export interface GameServerClient {
 - Configurable thresholds and spin reset rules live in `src/config/config.json`; keep multipliers sorted by `tilesRequired`.
 - Symbol PAR reel probabilities live in `config.json` under `symbolDistribution`. Default is 70% EMPTY, 15% COIN, 15% SOLDIER; values must sum to 1.
 - Coin value probabilities live in `coinValueDistribution` per colour; default weights align with 1 (30%), 2 (25%), 3 (25%), 25 (10%), 50 (5%), 100 (5%) for both GREEN and ORANGE. Weights are normalized internally.
+- Rendering is responsive: the Pixi canvas resizes to its parent, and the 6×5 grid scales to fill available space while preserving aspect ratio.
 - Tests live in `tests` and should favour deterministic symbol sources for predictable outcomes.
 - Correct end-of-round behaviour
 - Correct UI updating

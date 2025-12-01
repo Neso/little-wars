@@ -7,6 +7,7 @@ import { BalanceController } from './BalanceController';
 import { TotalWinController } from './TotalWinController';
 import { TopBar } from './TopBar';
 import { GameMachine } from './GameMachine';
+import { Hud } from './Hud';
 
 export class MainUI {
   private engine: GameEngine;
@@ -16,8 +17,9 @@ export class MainUI {
   private totalWinController: TotalWinController;
   private topBar: TopBar;
   private gameMachine: GameMachine;
+  private hud?: Hud;
 
-  constructor(engine: GameEngine, app: Application) {
+  constructor(engine: GameEngine, app: Application, hud?: Hud) {
     this.engine = engine;
     this.spinController = new SpinController(() => this.handleSpin());
     this.betController = new BetController((bet) => this.engine.setBet(bet));
@@ -25,15 +27,33 @@ export class MainUI {
     this.totalWinController = new TotalWinController();
     this.topBar = new TopBar();
     this.gameMachine = new GameMachine(app);
+    this.hud = hud;
     this.syncUI(this.engine.getState());
   }
 
-  private handleSpin(): void {
-    const newState = this.engine.spin();
-    this.syncUI(newState);
+  public resize(width: number, height: number): void {
+    this.gameMachine.setViewport(width, height);
+    // Repaint at the new size with the latest state.
+    this.gameMachine.update(this.engine.getState().tiles);
   }
 
-  private syncUI(state: GameState): void {
+  public spin(): void {
+    this.handleSpin();
+  }
+
+  public skipAnimation(): void {
+    this.gameMachine.skipAnimation();
+  }
+
+  private async handleSpin(): Promise<void> {
+    this.gameMachine.setOpacity(true);
+    const newState = this.engine.spin();
+    this.syncUI(newState, { skipBoard: true });
+    await this.gameMachine.animateSpin(newState.tiles);
+    this.gameMachine.setOpacity(false);
+  }
+
+  private syncUI(state: GameState, opts?: { skipBoard?: boolean }): void {
     this.balanceController.update(state.balance);
     this.totalWinController.update(state.totalWin);
     this.betController.update(state.bet);
@@ -47,6 +67,9 @@ export class MainUI {
       multipliers: state.multipliers,
       maxTiles: state.greenTileCount + state.orangeTileCount
     });
-    this.gameMachine.update(state.tiles);
+    if (!opts?.skipBoard) {
+      this.gameMachine.update(state.tiles);
+    }
+    this.hud?.update(state);
   }
 }

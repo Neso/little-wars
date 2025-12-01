@@ -3,6 +3,7 @@ import { GameConfigLoader } from '@config/GameConfigLoader';
 import { GameEngine } from '@core/GameEngine';
 import { WeightedSymbolSource } from '@core/SymbolSource';
 import { MainUI } from '@ui/MainUI';
+import { Hud } from '@ui/Hud';
 
 const canvasParent = document.getElementById('app');
 
@@ -10,9 +11,13 @@ if (!canvasParent) {
   throw new Error('Mount point #app not found');
 }
 
+const initialRect = canvasParent.getBoundingClientRect();
+const initialWidth = Math.max(320, initialRect.width || window.innerWidth || 320);
+const initialHeight = Math.max(280, initialRect.height || window.innerHeight || 280);
+
 const app = new Application({
-  width: 320,
-  height: 280,
+  width: initialWidth,
+  height: initialHeight,
   backgroundColor: 0x101820
 });
 
@@ -21,6 +26,23 @@ const engine = new GameEngine(
   config,
   new WeightedSymbolSource(config.symbolDistribution, config.coinValueDistribution)
 );
-new MainUI(engine, app);
+const hud = new Hud(() => ui.spin());
+const ui = new MainUI(engine, app, hud);
 
-canvasParent.appendChild(app.view as HTMLCanvasElement);
+const view = app.view as HTMLCanvasElement;
+view.style.width = '100%';
+view.style.height = '100%';
+view.style.display = 'block';
+const canvasContainer = document.getElementById('canvas-container') ?? canvasParent;
+canvasContainer.appendChild(view);
+
+const resize = (): void => {
+  const rect = canvasContainer.getBoundingClientRect();
+  const width = Math.max(320, (rect.width || window.innerWidth || 320) * 0.9);
+  const height = Math.max(280, (rect.height || window.innerHeight || 280) * 0.8);
+  ui.resize(width, height);
+};
+
+resize();
+window.addEventListener('resize', resize);
+view.addEventListener('click', () => ui.skipAnimation());

@@ -19,7 +19,21 @@ const coinDistribution: CoinValueDistribution = {
 
 describe('WeightedSymbolSource', () => {
   it('respects distribution cutoffs deterministically', () => {
-    const rolls = [0.0, 0.69, 0.7, 0.84, 0.85, 0.99];
+    // Sequence accounts for extra draws on coins (type, colour, value) and soldiers (type, colour).
+    const rolls = [
+      0.0, // type -> EMPTY
+      0.69, // type -> EMPTY
+      0.7, // type -> COIN
+      0.4, // coin colour
+      0.1, // coin value -> 1
+      0.84, // type -> COIN
+      0.6, // coin colour
+      0.8, // coin value -> 25
+      0.85, // type -> SOLDIER
+      0.2, // soldier colour
+      0.99, // type -> SOLDIER
+      0.9 // soldier colour
+    ];
     let index = 0;
     const rng = () => rolls[index++ % rolls.length];
     const source = new WeightedSymbolSource(distribution, coinDistribution, rng);
@@ -35,19 +49,22 @@ describe('WeightedSymbolSource', () => {
   });
 
   it('returns coin values according to weighted distribution', () => {
-    const rolls = [0.71, 0.75, 0.9, 0.95, 0.99]; // all coin rolls
+    // Each symbol: type -> COIN followed by colour then value roll.
+    const rolls = [
+      0.71, 0.1, 0.0, // coin -> value roll 0.0 -> 1
+      0.72, 0.2, 0.31, // value roll 0.31 -> 2
+      0.73, 0.3, 0.56, // value roll 0.56 -> 3
+      0.74, 0.4, 0.89, // value roll 0.89 -> 25
+      0.75, 0.5, 0.94 // value roll 0.94 -> 50
+    ];
     const rng = (() => {
       let idx = 0;
-      return () => {
-        const value = rolls[idx % rolls.length];
-        idx += 1;
-        return value;
-      };
+      return () => rolls[idx++ % rolls.length];
     })();
     const source = new WeightedSymbolSource(distribution, coinDistribution, rng);
     const symbols = source.generateSymbols(5).filter((s) => s.type === 'COIN');
 
-    expect(symbols.map((s) => (s.type === 'COIN' ? s.value : 0))).toEqual([1, 2, 25, 50, 100]);
+    expect(symbols.map((s) => (s.type === 'COIN' ? s.value : 0))).toEqual([1, 2, 3, 25, 50]);
   });
 
   it('throws when distribution does not sum to 1', () => {

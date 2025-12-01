@@ -4,9 +4,172 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Little Wars</title>
+    <style>
+      html,
+      body,
+      #app {
+        margin: 0;
+        height: 100%;
+        width: 100%;
+        background: #101820;
+        color: #e8f1f2;
+        font-family: 'Segoe UI', Arial, sans-serif;
+        display: flex;
+        justify-content: center;
+        align-items: stretch;
+      }
+
+      .shell {
+        width: 100%;
+        max-width: 1200px;
+        height: 100%;
+        display: flex;
+        flex-direction: column;
+        padding: 16px 16px 12px;
+        box-sizing: border-box;
+        gap: 10px;
+      }
+
+      .top-info {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        gap: 12px;
+        background: #16222f;
+        padding: 12px 16px;
+        border-radius: 8px;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.35);
+      }
+
+      .top-info .card {
+        display: flex;
+        flex-direction: column;
+        gap: 4px;
+        padding: 8px 10px;
+        background: #1f3044;
+        border-radius: 6px;
+      }
+
+      .top-info .label {
+        font-size: 12px;
+        color: #9cb3c9;
+        text-transform: uppercase;
+        letter-spacing: 0.04em;
+      }
+
+      .top-info .value {
+        font-size: 22px;
+        font-weight: 700;
+      }
+
+      .hud {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+        gap: 10px;
+        background: #16222f;
+        padding: 10px 12px;
+        border-radius: 8px;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+        align-items: center;
+      }
+
+      .hud .card {
+        display: flex;
+        flex-direction: column;
+        gap: 2px;
+        padding: 8px 10px;
+        background: #1f3044;
+        border-radius: 6px;
+      }
+
+      .hud .label {
+        font-size: 11px;
+        color: #9cb3c9;
+        text-transform: uppercase;
+        letter-spacing: 0.04em;
+      }
+
+      .hud .value {
+        font-size: 15px;
+        font-weight: 600;
+      }
+
+      .controls {
+        display: flex;
+        gap: 12px;
+        align-items: center;
+        justify-content: flex-end;
+        width: 100%;
+        grid-column: 1 / -1;
+      }
+
+      button.spin {
+        padding: 10px 16px;
+        background: #2fbf71;
+        color: #0b141c;
+        border: none;
+        border-radius: 6px;
+        font-weight: 700;
+        cursor: pointer;
+      }
+
+      button.spin:hover {
+        background: #33d27c;
+      }
+
+      #canvas-container {
+        flex: 1;
+        background: #0f1722;
+        border-radius: 10px;
+        position: relative;
+        overflow: hidden;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        min-height: 360px;
+      }
+
+      canvas {
+        display: block;
+      }
+    </style>
   </head>
   <body>
-    <div id="app"></div>
+    <div id="app">
+      <div class="shell">
+        <div class="top-info">
+          <div class="card">
+            <div class="label">Tiles</div>
+            <div class="value" id="hud-tiles">–</div>
+          </div>
+          <div class="card">
+            <div class="label">Multipliers</div>
+            <div class="value" id="hud-mults">–</div>
+          </div>
+        </div>
+        <div id="canvas-container"></div>
+        <div class="hud">
+          <div class="card">
+            <div class="label">Balance</div>
+            <div class="value" id="hud-balance">–</div>
+          </div>
+          <div class="card">
+            <div class="label">Total Win</div>
+            <div class="value" id="hud-totalwin">–</div>
+          </div>
+          <div class="card">
+            <div class="label">Bet</div>
+            <div class="value" id="hud-bet">–</div>
+          </div>
+          <div class="card">
+            <div class="label">Spins</div>
+            <div class="value" id="hud-spins">–</div>
+          </div>
+          <div class="controls">
+            <button class="spin" id="hud-spin">Spin</button>
+          </div>
+        </div>
+      </div>
+    </div>
     <script type="module" src="/src/main.ts"></script>
   </body>
 </html>
