@@ -20,6 +20,7 @@ export class MainUI {
   private gameMachine: GameMachine;
   private hud?: Hud;
   private modal?: RoundModal;
+  private animating = false;
 
   constructor(engine: GameEngine, app: Application, hud?: Hud, modal?: RoundModal) {
     this.engine = engine;
@@ -45,15 +46,22 @@ export class MainUI {
   }
 
   public skipAnimation(): void {
-    this.gameMachine.skipAnimation();
+    if (this.animating) {
+      this.gameMachine.skipAnimation();
+    }
   }
 
   private async handleSpin(): Promise<void> {
+    if (this.animating) {
+      return;
+    }
+    this.animating = true;
     this.gameMachine.setOpacity(true);
     const newState = this.engine.spin();
     this.syncUI(newState, { skipBoard: true });
     await this.gameMachine.animateSpin(newState.tiles);
     this.gameMachine.setOpacity(false);
+    this.animating = false;
   }
 
   private syncUI(state: GameState, opts?: { skipBoard?: boolean }): void {

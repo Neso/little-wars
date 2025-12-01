@@ -1,5 +1,5 @@
 import { Tile } from '@core/types';
-import { Application, Container, Graphics, Sprite, Texture } from 'pixi.js';
+import { Application, Container, Graphics, Rectangle, Sprite, Texture } from 'pixi.js';
 
 const textures = {
   coin: {
@@ -17,18 +17,22 @@ export class GameMachine {
   private app: Application;
   private container: Container;
   private tilesLayer: Container;
+  private flickerLayer: Container;
   private symbolsLayer: Container;
   private dimmed = false;
   private viewportWidth = 320;
   private viewportHeight = 280;
   private skipRequested = false;
+  private lastColours: Map<string, string> = new Map();
 
   constructor(app: Application, container?: Container) {
     this.app = app;
     this.container = container ?? new Container();
     this.tilesLayer = new Container();
+    this.flickerLayer = new Container();
     this.symbolsLayer = new Container();
     this.container.addChild(this.tilesLayer);
+    this.container.addChild(this.flickerLayer);
     this.container.addChild(this.symbolsLayer);
     this.app.stage.addChild(this.container);
   }
@@ -37,11 +41,12 @@ export class GameMachine {
     this.viewportWidth = width;
     this.viewportHeight = height;
     this.app.renderer.resize(width, height);
+    this.container.hitArea = new Rectangle(0, 0, width, height);
   }
 
   public setOpacity(dimmed: boolean): void {
     this.dimmed = dimmed;
-    this.tilesLayer.alpha = dimmed ? 0.3 : 1;
+    // No dimming; keep state for potential hooks.
   }
 
   public skipAnimation(): void {
@@ -53,6 +58,14 @@ export class GameMachine {
     this.tilesLayer.removeChildren();
     this.symbolsLayer.removeChildren();
     if (!tiles.length) return;
+
+    const changed: Tile[] = [];
+    tiles.forEach((tile) => {
+      const prev = this.lastColours.get(tile.id);
+      if (prev && prev !== tile.colour) {
+        changed.push(tile);
+      }
+    });
 
     tiles.forEach((tile) => {
       const { x, y } = this.positionFor(tile, layout);
@@ -68,6 +81,9 @@ export class GameMachine {
       sprite.y = y + (layout.size - sprite.height) / 2;
       this.symbolsLayer.addChild(sprite);
     });
+
+    this.flashChangedTiles(changed, layout);
+    this.lastColours = new Map(tiles.map((t) => [t.id, t.colour]));
   }
 
   public animateSpin(tiles: Tile[], durationMs = 500, columnDelayMs = 120): Promise<void> {
@@ -197,5 +213,37 @@ export class GameMachine {
     sprite.width = texture.width * scale;
     sprite.height = texture.height * scale;
     return sprite;
+  }
+
+  private flashChangedTiles(changed: Tile[], layout: { offsetX: number; offsetY: number; tileSize: number; padding: number; size: number }): void {
+    this.flickerLayer.removeChildren();
+    if (!changed.length) return;
+    const overlays: Graphics[] = [];
+    changed.forEach((tile) => {
+      const { x, y } = this.positionFor(tile, layout);
+      const g = new Graphics();
+      g.beginFill(0xffffff, 1);
+      g.drawRect(x, y, layout.size, layout.size);
+      g.endFill();
+      g.alpha = 0;
+      this.flickerLayer.addChild(g);
+      overlays.push(g);
+    });
+
+    let step = 0;
+    const maxSteps = 6; // 3 flickers
+    const interval = 70;
+    const toggle = () => {
+      const visible = step % 2 === 0;
+      overlays.forEach((g) => (g.alpha = visible ? 0.7 : 0));
+      step += 1;
+      if (step <= maxSteps) {
+        setTimeout(toggle, interval);
+      } else {
+        overlays.forEach((g) => (g.alpha = 0));
+        this.flickerLayer.removeChildren();
+      }
+    };
+    toggle();
   }
 }

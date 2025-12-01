@@ -47,4 +47,10 @@ const resize = (): void => {
 
 resize();
 window.addEventListener('resize', resize);
-view.addEventListener('click', () => ui.skipAnimation());
+view.addEventListener('click', () => {
+  ui.skipAnimation();
+  const state = engine.getState();
+  if (!state.roundActive || state.remainingSpins <= 0) {
+    ui.spin();
+  }
+});
