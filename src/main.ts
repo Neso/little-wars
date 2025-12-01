@@ -4,6 +4,7 @@ import { GameEngine } from '@core/GameEngine';
 import { WeightedSymbolSource } from '@core/SymbolSource';
 import { MainUI } from '@ui/MainUI';
 import { Hud } from '@ui/Hud';
+import { RoundModal } from '@ui/RoundModal';
 
 const canvasParent = document.getElementById('app');
 
@@ -27,7 +28,8 @@ const engine = new GameEngine(
   new WeightedSymbolSource(config.symbolDistribution, config.coinValueDistribution)
 );
 const hud = new Hud(() => ui.spin());
-const ui = new MainUI(engine, app, hud);
+const modal = new RoundModal();
+const ui = new MainUI(engine, app, hud, modal);
 
 const view = app.view as HTMLCanvasElement;
 view.style.width = '100%';

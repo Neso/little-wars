@@ -172,8 +172,8 @@ export interface GameConfig {
   },
   "spinsPerRound": 3,
   "spinResetRules": [
-    { "symbolType": "COIN", "minCount": 1, "resetToSpins": 1 },
-    { "symbolType": "SOLDIER", "minCount": 1, "resetToSpins": 1 }
+    { "symbolType": "COIN", "minCount": 1, "resetToSpins": 3 },
+    { "symbolType": "SOLDIER", "minCount": 1, "resetToSpins": 3 }
   ],
   "symbolDistribution": {
     "empty": 0.7,
@@ -445,6 +445,7 @@ export interface GameServerClient {
 - Rendering is responsive: the Pixi canvas resizes to its parent, and the 6×5 grid scales to fill available space while preserving aspect ratio.
 - Tests live in `tests` and should favour deterministic symbol sources for predictable outcomes.
 - HUD shows balance, total win, current spin win, bet, spins, tiles, and multipliers; top bar highlights tiles/multipliers, bottom bar carries other values and spin control. Cascading spins dim tiles and drop symbols per column; click on the grid to skip animation.
+- Round completion triggers a modal displaying the total win for the round. Last round win is tracked on the state for UI display.
 - Correct end-of-round behaviour
 - Correct UI updating
 - Bet constraints enforced

@@ -131,6 +131,46 @@
       canvas {
         display: block;
       }
+
+      .modal {
+        position: fixed;
+        inset: 0;
+        background: rgba(0, 0, 0, 0.6);
+        display: none;
+        align-items: center;
+        justify-content: center;
+        z-index: 10;
+      }
+
+      .modal .panel {
+        background: #1b2736;
+        padding: 20px 24px;
+        border-radius: 10px;
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.45);
+        min-width: 260px;
+        text-align: center;
+      }
+
+      .modal .panel h3 {
+        margin: 0 0 8px;
+        font-size: 18px;
+      }
+
+      .modal .panel .total {
+        font-size: 24px;
+        font-weight: 800;
+        color: #2fbf71;
+        margin-bottom: 12px;
+      }
+
+      .modal .panel button {
+        padding: 8px 14px;
+        border: none;
+        border-radius: 6px;
+        background: #2fbf71;
+        font-weight: 700;
+        cursor: pointer;
+      }
     </style>
   </head>
   <body>
@@ -171,6 +211,13 @@
           <div class="controls">
             <button class="spin" id="hud-spin">Spin</button>
           </div>
+        </div>
+      </div>
+      <div class="modal" id="round-modal">
+        <div class="panel">
+          <h3>Round Complete</h3>
+          <div class="total" id="round-modal-text">Total Win: 0</div>
+          <button id="round-modal-close">Close</button>
         </div>
       </div>
     </div>

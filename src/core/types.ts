@@ -82,6 +82,7 @@ export interface GameState {
   bet: number;
   totalWin: number;
   lastSpinWin?: number;
+  lastRoundWin?: number;
   remainingSpins: number;
   maxSpinsPerRound: number;
   greenTileCount: number;

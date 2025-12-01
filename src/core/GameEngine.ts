@@ -49,6 +49,7 @@ export class GameEngine {
     this.state.maxSpinsPerRound = this.config.spinsPerRound;
     this.state.totalWin = 0;
     this.state.lastSpinWin = 0;
+    this.state.lastRoundWin = undefined;
     this.state.roundActive = true;
     this.board.clearSymbols();
     this.updateTileCountsAndMultipliers();
@@ -157,7 +158,8 @@ export class GameEngine {
     this.config.spinResetRules.forEach((rule) => {
       const count = countSymbolType(symbols, rule.symbolType as SymbolType);
       if (count >= rule.minCount) {
-        updatedSpins = Math.max(updatedSpins, rule.resetToSpins);
+        const target = Math.min(rule.resetToSpins, this.state.maxSpinsPerRound);
+        updatedSpins = Math.max(updatedSpins, target);
       }
     });
     this.state.remainingSpins = updatedSpins;
@@ -167,6 +169,7 @@ export class GameEngine {
     if (this.state.remainingSpins > 0) {
       return;
     }
+    this.state.lastRoundWin = this.state.totalWin;
     this.state.balance += this.state.totalWin;
     this.state.totalWin = 0;
     this.state.roundActive = false;

@@ -8,6 +8,7 @@ import { TotalWinController } from './TotalWinController';
 import { TopBar } from './TopBar';
 import { GameMachine } from './GameMachine';
 import { Hud } from './Hud';
+import { RoundModal } from './RoundModal';
 
 export class MainUI {
   private engine: GameEngine;
@@ -18,8 +19,9 @@ export class MainUI {
   private topBar: TopBar;
   private gameMachine: GameMachine;
   private hud?: Hud;
+  private modal?: RoundModal;
 
-  constructor(engine: GameEngine, app: Application, hud?: Hud) {
+  constructor(engine: GameEngine, app: Application, hud?: Hud, modal?: RoundModal) {
     this.engine = engine;
     this.spinController = new SpinController(() => this.handleSpin());
     this.betController = new BetController((bet) => this.engine.setBet(bet));
@@ -28,6 +30,7 @@ export class MainUI {
     this.topBar = new TopBar();
     this.gameMachine = new GameMachine(app);
     this.hud = hud;
+    this.modal = modal;
     this.syncUI(this.engine.getState());
   }
 
@@ -71,5 +74,10 @@ export class MainUI {
       this.gameMachine.update(state.tiles);
     }
     this.hud?.update(state);
+    if (!state.roundActive && state.lastRoundWin !== undefined) {
+      this.modal?.show(state.lastRoundWin);
+    } else {
+      this.modal?.hide();
+    }
   }
 }

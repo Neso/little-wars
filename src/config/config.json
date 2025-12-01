@@ -8,8 +8,8 @@
   },
   "spinsPerRound": 3,
   "spinResetRules": [
-    { "symbolType": "COIN", "minCount": 1, "resetToSpins": 1 },
-    { "symbolType": "SOLDIER", "minCount": 1, "resetToSpins": 1 }
+    { "symbolType": "COIN", "minCount": 1, "resetToSpins": 3 },
+    { "symbolType": "SOLDIER", "minCount": 1, "resetToSpins": 3 }
   ],
   "symbolDistribution": {
     "empty": 0.98,

@@ -36,7 +36,11 @@ describe('GameEngine', () => {
   });
 
   it('applies spin reset rules when soldiers land', () => {
-    const singleSpinConfig = { ...config, spinsPerRound: 1 };
+    const singleSpinConfig = {
+      ...config,
+      spinsPerRound: 1,
+      spinResetRules: [{ symbolType: 'SOLDIER', minCount: 1, resetToSpins: 1 }]
+    };
     const symbols: Symbol[] = emptySymbols(30);
     symbols[5] = { type: 'SOLDIER', colour: 'GREEN' };
     const engine = new GameEngine(singleSpinConfig, new FixedSymbolSource(symbols));
