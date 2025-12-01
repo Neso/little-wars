@@ -11,7 +11,8 @@ This document defines the **game design** and **technical spec (TypeScript)** fo
 - The grid starts with **15 green tiles and 15 orange tiles**.
 - On each spin, symbols **tumble down** into tiles.
 - **Coins** pay based on tile colour, symbol colour, symbol value, and multiplier.
-- **Soldiers** behave like empty symbols (for now).
+- **Soldiers** flip tiles (adjacent when on own colour, landing tile when on opposite).
+- **Tanks** convert the landing row to their colour from landing column to the right.
 - Game state + multipliers are configurable via JSON.
 
 ---
@@ -24,9 +25,7 @@ This document defines the **game design** and **technical spec (TypeScript)** fo
 - Tile includes:
   - `colour`: GREEN or ORANGE
   - Base ownership at start: 15 green, 15 orange
-- Visual opacity:
-  - **100%** when idle
-  - **30%** during tumbling animation
+- Visual opacity: tiles stay fully opaque during spins; colour flips are highlighted via flicker.
 
 ### 2.2 Symbols
 
@@ -48,9 +47,17 @@ This document defines the **game design** and **technical spec (TypeScript)** fo
 #### Soldier Symbol
 - `type: SOLDIER`
 - `colour: GREEN | ORANGE`
-- Currently behaves as EMPTY.
-- Future: configurable effects.
+- Behaviour:
+  - If soldier lands on its own colour: targets one adjacent orthogonal tile (up/down/left/right). Prefers an opposite-colour tile; if none, targets any adjacent tile. Target tile flips to soldier colour.
+  - If soldier lands on opposite colour: flips that tile to soldier colour.
 - Can reset spin depending on configuration.
+
+#### Tank Symbol
+- `type: TANK`
+- `colour: GREEN | ORANGE`
+- Behaviour:
+  - Drops on a tile then **drives to the right** on its row, converting every tile from its landing column through the last column to the tank’s colour (including the landing tile).
+  - Tank drop probability can vary per column and per colour (configured via `tankReelWeights`).
 
 ---
 
@@ -93,6 +100,7 @@ UI shows:
 #### Symbol Execution
 1. **Coins**
 2. **Soldiers**
+3. **Tanks**
 
 Updates:
 - Tile ownership
@@ -126,7 +134,7 @@ export interface MultiplierThreshold {
 }
 
 export type Colour = 'GREEN' | 'ORANGE';
-export type SymbolType = 'EMPTY' | 'COIN' | 'SOLDIER';
+export type SymbolType = 'EMPTY' | 'COIN' | 'SOLDIER' | 'TANK';
 
 export interface SpinResetRule {
   symbolType: SymbolType;
@@ -151,10 +159,15 @@ export interface GameConfig {
     empty: number;    // probability 0-1
     coin: number;     // probability 0-1
     soldier: number;  // probability 0-1
+    tank?: number;    // probability 0-1 (baseline; tanks also influenced by per-column weights)
   };
   coinValueDistribution: {
     GREEN: { onOwn: { value: number; weight: number }[]; onOpposite: { value: number; weight: number }[] };
     ORANGE: { onOwn: { value: number; weight: number }[]; onOpposite: { value: number; weight: number }[] };
+  };
+  tankReelWeights: {
+    GREEN: number[]; // per-column tank probability for GREEN tanks (length 6)
+    ORANGE: number[]; // per-column tank probability for ORANGE tanks (length 6)
   };
 }
 ```
@@ -178,7 +191,8 @@ export interface GameConfig {
   "symbolDistribution": {
     "empty": 0.7,
     "coin": 0.15,
-    "soldier": 0.15
+    "soldier": 0.15,
+    "tank": 0.0
   },
   "coinValueDistribution": {
     "GREEN": {
@@ -217,6 +231,10 @@ export interface GameConfig {
         { "value": 100, "weight": 0.02 }
       ]
     }
+  },
+  "tankReelWeights": {
+    "GREEN": [0.0, 0.002, 0.003, 0.004, 0.005, 0.006],
+    "ORANGE": [0.0, 0.002, 0.003, 0.004, 0.005, 0.006]
   },
   "multipliers": {
     "GREEN": [
@@ -268,7 +286,7 @@ export interface GameConfig {
 
 ```ts
 export type Colour = 'GREEN' | 'ORANGE';
-export type SymbolType = 'EMPTY' | 'COIN' | 'SOLDIER';
+export type SymbolType = 'EMPTY' | 'COIN' | 'SOLDIER' | 'TANK';
 
 export interface BaseSymbol { type: SymbolType; }
 
@@ -285,7 +303,12 @@ export interface SoldierSymbol extends BaseSymbol {
   colour: Colour;
 }
 
-export type Symbol = EmptySymbol | CoinSymbol | SoldierSymbol;
+export interface TankSymbol extends BaseSymbol {
+  type: 'TANK';
+  colour: Colour;
+}
+
+export type Symbol = EmptySymbol | CoinSymbol | SoldierSymbol | TankSymbol;
 
 export interface Tile {
   id: string;
@@ -460,11 +483,12 @@ export interface GameServerClient {
 - Entry: `src/main.ts` bootstraps the `GameEngine` with the JSON config and hooks `MainUI`.
 - Core modules live under `src/core` (engine, board, symbol source, types). UI scaffolding sits in `src/ui`, rendering helpers in `src/render`, audio stubs in `src/audio`, and configuration in `src/config`.
 - Configurable thresholds and spin reset rules live in `src/config/config.json`; keep multipliers sorted by `tilesRequired`.
-- Symbol PAR reel probabilities live in `config.json` under `symbolDistribution`. Default is 70% EMPTY, 15% COIN, 15% SOLDIER; values must sum to 1.
+- Symbol PAR reel probabilities live in `config.json` under `symbolDistribution`. Default is 70% EMPTY, 15% COIN, 15% SOLDIER; values must sum to 1. Tank baseline probability can be set but is typically low; per-column tank weights live separately.
 - Coin value probabilities live in `coinValueDistribution` per colour, split for landing on own colour vs flipping an opposite tile. Defaults mirror prior weights for onOwn, with higher small-coin weights on opposite flips.
+- Tank drop weights are configured per column per colour in `tankReelWeights` (length-6 arrays). Tanks convert their landing tile and all tiles to the right on that row to their colour.
 - Rendering is responsive: the Pixi canvas resizes to its parent, and the 6×5 grid scales to fill available space while preserving aspect ratio.
 - Tests live in `tests` and should favour deterministic symbol sources for predictable outcomes.
-- HUD shows balance, total win, current spin win, bet, spins, tiles, and multipliers; top bar highlights tiles/multipliers, bottom bar carries other values and spin control. Cascading spins dim tiles and drop symbols per column; click on the grid to skip animation.
+- HUD shows balance, total win, current spin win, bet, spins, tiles, and multipliers; top bar highlights tiles/multipliers, bottom bar carries other values and spin control. Cascading spins drop symbols per column; click/space skips animation or triggers spin.
 - Round completion triggers a modal displaying the total win for the round. Last round win is tracked on the state for UI display.
 - Correct end-of-round behaviour
 - Correct UI updating

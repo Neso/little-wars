@@ -57,4 +57,32 @@ describe('GameEngine', () => {
     expect(state.remainingSpins).toBe(1);
     expect(state.roundActive).toBe(true);
   });
+
+  it('soldier flips opposite tile when landing on opposite colour', () => {
+    const symbols: Symbol[] = emptySymbols(30);
+    symbols[0] = { type: 'SOLDIER', colour: 'GREEN' };
+    const engine = new GameEngine(config, new FixedSymbolSource(symbols));
+    // Force tile 0 to be ORANGE to test flip
+    // @ts-expect-error private access for test
+    engine.board.setTileColour('0-0', 'ORANGE');
+
+    const state = engine.spin();
+    expect(state.greenTileCount).toBe(15); // back to balance after flip
+    expect(state.orangeTileCount).toBe(15);
+  });
+
+  it('soldier on own colour attacks adjacent tile (non-diagonal)', () => {
+    const symbols: Symbol[] = emptySymbols(30);
+    symbols[0] = { type: 'SOLDIER', colour: 'GREEN' };
+    const engine = new GameEngine(config, new FixedSymbolSource(symbols));
+    // Arrange adjacent tile (0,1) as ORANGE to be targeted
+    // @ts-expect-error private access for test
+    engine.board.setTileColour('0-0', 'GREEN');
+    // @ts-expect-error private access for test
+    engine.board.setTileColour('0-1', 'ORANGE');
+
+    const state = engine.spin();
+    expect(state.greenTileCount).toBe(15); // converted adjacent to green, restoring balance
+    expect(state.orangeTileCount).toBe(15);
+  });
 });

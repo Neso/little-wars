@@ -9,7 +9,9 @@ import {
   SymbolType
 } from './types';
 
-const TILE_COUNT = 30;
+const ROWS = 5;
+const COLS = 6;
+const TILE_COUNT = ROWS * COLS;
 
 export class GameEngine {
   private board: Board;
@@ -70,7 +72,7 @@ export class GameEngine {
     this.state.lastSpinWin = 0;
     this.state.lastSpinPayouts = [];
 
-    const symbols = this.symbolSource.generateSymbols(TILE_COUNT);
+    const symbols = this.symbolSource.generateSymbols(ROWS, COLS);
     this.applySymbolsToBoard(symbols);
     this.resolveSymbols(symbols);
     this.applySpinResetRules(symbols);
@@ -108,6 +110,7 @@ export class GameEngine {
   private resolveSymbols(symbols: Symbol[]): void {
     this.applyCoins(symbols);
     this.applySoldiers();
+    this.applyTanks(symbols);
   }
 
   private applyCoins(symbols: Symbol[]): void {
@@ -137,7 +140,34 @@ export class GameEngine {
   }
 
   private applySoldiers(): void {
-    // Soldiers behave as EMPTY for now. Hook for future effects.
+    const tiles = this.board.getTiles();
+    tiles.forEach((tile) => {
+      const symbol = tile.symbol;
+      if (!symbol || symbol.type !== 'SOLDIER') return;
+      const adjacents = this.board.getAdjacent(tile.id);
+      if (tile.colour === symbol.colour) {
+        const target =
+          adjacents.find((t) => t.colour !== symbol.colour) || adjacents.find(() => true);
+        if (target) {
+          this.board.setTileColour(target.id, symbol.colour);
+        }
+      } else {
+        this.board.setTileColour(tile.id, symbol.colour);
+      }
+    });
+  }
+
+  private applyTanks(symbols: Symbol[]): void {
+    const tiles = this.board.getTiles();
+    symbols.forEach((symbol, index) => {
+      if (symbol.type !== 'TANK') return;
+      const tile = tiles[index];
+      if (!tile) return;
+      const targetRow = tile.row;
+      tiles
+        .filter((t) => t.row === targetRow && t.col >= tile.col)
+        .forEach((t) => this.board.setTileColour(t.id, symbol.colour));
+    });
   }
 
   private updateTileCountsAndMultipliers(): void {

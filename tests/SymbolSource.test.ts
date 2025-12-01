@@ -17,28 +17,24 @@ const coinDistribution: CoinValueDistribution = {
   ORANGE: { onOwn: sharedCoinWeights, onOpposite: sharedCoinWeights }
 };
 
+const tankReels = { GREEN: [0, 0, 0, 0, 0, 0], ORANGE: [0, 0, 0, 0, 0, 0] };
+
 describe('WeightedSymbolSource', () => {
   it('respects distribution cutoffs deterministically', () => {
-    // Sequence accounts for extra draws on coins (type, colour, value) and soldiers (type, colour).
+    // Sequence accounts for tank roll per tile, then type roll, then colour/value where needed.
     const rolls = [
-      0.0, // type -> EMPTY
-      0.69, // type -> EMPTY
-      0.7, // type -> COIN
-      0.4, // coin colour
-      0.1, // coin value -> 1
-      0.84, // type -> COIN
-      0.6, // coin colour
-      0.8, // coin value -> 25
-      0.85, // type -> SOLDIER
-      0.2, // soldier colour
-      0.99, // type -> SOLDIER
-      0.9 // soldier colour
+      0.0, 0.0, // tile0 tank, type -> EMPTY
+      0.0, 0.69, // tile1 tank, type -> EMPTY
+      0.0, 0.7, 0.4, 0.1, // tile2 tank, type -> COIN, colour, value -> 1
+      0.0, 0.84, 0.6, 0.8, // tile3 tank, type -> COIN, colour, value -> 25
+      0.0, 0.85, 0.2, // tile4 tank, type -> SOLDIER, colour
+      0.0, 0.99, 0.9 // tile5 tank, type -> SOLDIER, colour
     ];
     let index = 0;
     const rng = () => rolls[index++ % rolls.length];
-    const source = new WeightedSymbolSource(distribution, coinDistribution, rng);
+    const source = new WeightedSymbolSource(distribution, coinDistribution, tankReels, rng);
 
-    const symbols = source.generateSymbols(6);
+    const symbols = source.generateSymbols(1, 6);
 
     expect(symbols[0].type).toBe('EMPTY');
     expect(symbols[1].type).toBe('EMPTY');
@@ -49,27 +45,33 @@ describe('WeightedSymbolSource', () => {
   });
 
   it('returns coin values according to weighted distribution', () => {
-    // Each symbol: type -> COIN followed by colour then value roll.
+    // Each symbol: tank roll, type -> COIN followed by colour then value roll.
     const rolls = [
-      0.71, 0.1, 0.0, // coin -> value roll 0.0 -> 1
-      0.72, 0.2, 0.31, // value roll 0.31 -> 2
-      0.73, 0.3, 0.56, // value roll 0.56 -> 3
-      0.74, 0.4, 0.89, // value roll 0.89 -> 25
-      0.75, 0.5, 0.94 // value roll 0.94 -> 50
+      0, 0.71, 0.1, 0.0, // coin -> value roll 0.0 -> 1
+      0, 0.72, 0.2, 0.31, // value roll 0.31 -> 2
+      0, 0.73, 0.3, 0.56, // value roll 0.56 -> 3
+      0, 0.74, 0.4, 0.89, // value roll 0.89 -> 25
+      0, 0.75, 0.5, 0.94 // value roll 0.94 -> 50
     ];
     const rng = (() => {
       let idx = 0;
       return () => rolls[idx++ % rolls.length];
     })();
-    const source = new WeightedSymbolSource(distribution, coinDistribution, rng);
-    const symbols = source.generateSymbols(5).filter((s) => s.type === 'COIN');
+    const source = new WeightedSymbolSource(distribution, coinDistribution, tankReels, rng);
+    const symbols = source.generateSymbols(1, 5).filter((s) => s.type === 'COIN');
 
     expect(symbols.map((s) => (s.type === 'COIN' ? s.value : 0))).toEqual([1, 2, 3, 25, 50]);
   });
 
   it('throws when distribution does not sum to 1', () => {
     expect(
-      () => new WeightedSymbolSource({ empty: 0.5, coin: 0.5, soldier: 0.1 }, coinDistribution, Math.random)
+      () =>
+        new WeightedSymbolSource(
+          { empty: 0.5, coin: 0.5, soldier: 0.1 },
+          coinDistribution,
+          tankReels,
+          Math.random
+        )
     ).toThrow('Symbol distribution must sum to 1.');
   });
 });

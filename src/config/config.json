@@ -9,12 +9,14 @@
   "spinsPerRound": 3,
   "spinResetRules": [
     { "symbolType": "COIN", "minCount": 1, "resetToSpins": 3 },
-    { "symbolType": "SOLDIER", "minCount": 1, "resetToSpins": 3 }
+    { "symbolType": "SOLDIER", "minCount": 2, "resetToSpins": 3 },
+    { "symbolType": "TANK", "minCount": 2, "resetToSpins": 3 }
   ],
   "symbolDistribution": {
-    "empty": 0.97,
-    "coin": 0.025,
-    "soldier": 0.005
+    "empty": 0.95,
+    "coin": 0.03,
+    "soldier": 0.01,
+    "tank": 0.01
   },
   "coinValueDistribution": {
     "GREEN": {
@@ -53,6 +55,10 @@
         { "value": 100, "weight": 0.10 }
       ]
     }
+  },
+  "tankReelWeights": {
+    "GREEN": [0.05, 0.002, 0.003, 0.004, 0.005, 0.006],
+    "ORANGE": [0.05, 0.002, 0.003, 0.004, 0.005, 0.006]
   },
   "multipliers": {
     "GREEN": [

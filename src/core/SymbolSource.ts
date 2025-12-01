@@ -4,11 +4,12 @@ import {
   CoinValueWeight,
   Symbol,
   SymbolDistribution,
-  SymbolType
+  SymbolType,
+  TankReelWeights
 } from './types';
 
 export interface SymbolSource {
-  generateSymbols(tileCount: number): Symbol[];
+  generateSymbols(rows: number, cols: number): Symbol[];
 }
 
 type Rng = () => number;
@@ -16,28 +17,42 @@ type Rng = () => number;
 export class WeightedSymbolSource implements SymbolSource {
   private distribution: SymbolDistribution;
   private coinDistribution: CoinValueDistribution;
+  private tankReels: TankReelWeights;
   private rng: Rng;
 
   constructor(
     distribution: SymbolDistribution,
     coinValueDistribution: CoinValueDistribution,
+    tankReels: TankReelWeights,
     rng: Rng = Math.random
   ) {
     this.distribution = { ...distribution };
     this.coinDistribution = { ...coinValueDistribution };
+    this.tankReels = tankReels;
     this.rng = rng;
     this.validateDistribution(distribution);
     this.validateCoinDistribution(coinValueDistribution);
+    this.validateTankReels(tankReels);
   }
 
-  public generateSymbols(tileCount: number): Symbol[] {
-    return Array.from({ length: tileCount }, () => this.randomSymbol());
+  public generateSymbols(rows: number, cols: number): Symbol[] {
+    const symbols: Symbol[] = [];
+    for (let row = 0; row < rows; row++) {
+      for (let col = 0; col < cols; col++) {
+        symbols.push(this.randomSymbol(col));
+      }
+    }
+    return symbols;
   }
 
-  private randomSymbol(): Symbol {
+  private randomSymbol(col: number): Symbol {
+    const tank = this.rollTank(col);
+    if (tank) return tank;
+
     const roll = this.rng();
     const emptyCutoff = this.distribution.empty;
     const coinCutoff = emptyCutoff + this.distribution.coin;
+    const soldierCutoff = coinCutoff + this.distribution.soldier;
 
     if (roll < emptyCutoff) {
       return { type: 'EMPTY' };
@@ -45,7 +60,10 @@ export class WeightedSymbolSource implements SymbolSource {
     if (roll < coinCutoff) {
       return this.randomCoin();
     }
-    return this.randomSoldier();
+    if (roll < soldierCutoff) {
+      return this.randomSoldier();
+    }
+    return { type: 'EMPTY' };
   }
 
   private randomColour(): Colour {
@@ -54,10 +72,11 @@ export class WeightedSymbolSource implements SymbolSource {
 
   private randomCoin(): Symbol {
     const colour = this.randomColour();
+    const value = this.randomCoinValue(colour, true);
     return {
       type: 'COIN',
       colour,
-      value: this.randomCoinValue(colour)
+      value
     };
   }
 
@@ -68,8 +87,8 @@ export class WeightedSymbolSource implements SymbolSource {
     };
   }
 
-  private randomCoinValue(colour: Colour): number {
-    const dist = this.coinDistribution[colour].onOwn; // default sample; actual payout uses context in GameEngine
+  private randomCoinValue(colour: Colour, onOwn: boolean): number {
+    const dist = onOwn ? this.coinDistribution[colour].onOwn : this.coinDistribution[colour].onOpposite;
     const total = dist.reduce((sum, c) => sum + c.weight, 0);
     let roll = this.rng() * total;
     for (const entry of dist) {
@@ -82,7 +101,7 @@ export class WeightedSymbolSource implements SymbolSource {
   }
 
   private validateDistribution(distribution: SymbolDistribution): void {
-    const total = distribution.empty + distribution.coin + distribution.soldier;
+    const total = distribution.empty + distribution.coin + distribution.soldier + (distribution.tank ?? 0);
     if (Math.abs(total - 1) > 0.0001) {
       throw new Error('Symbol distribution must sum to 1.');
     }
@@ -99,6 +118,27 @@ export class WeightedSymbolSource implements SymbolSource {
       });
     });
   }
+
+  private validateTankReels(reels: TankReelWeights): void {
+    const cols = Math.max(reels.GREEN.length, reels.ORANGE.length);
+    if (cols === 0) return;
+    for (let i = 0; i < cols; i++) {
+      const green = reels.GREEN[i] ?? 0;
+      const orange = reels.ORANGE[i] ?? 0;
+      if (green + orange > 1) {
+        throw new Error(`Tank probabilities exceed 1 in column ${i}`);
+      }
+    }
+  }
+
+  private rollTank(col: number): Symbol | null {
+    const green = this.tankReels.GREEN[col] ?? 0;
+    const orange = this.tankReels.ORANGE[col] ?? 0;
+    const roll = this.rng();
+    if (roll < green) return { type: 'TANK', colour: 'GREEN' };
+    if (roll < green + orange) return { type: 'TANK', colour: 'ORANGE' };
+    return null;
+  }
 }
 
 export class FixedSymbolSource implements SymbolSource {
@@ -108,7 +148,8 @@ export class FixedSymbolSource implements SymbolSource {
     this.symbols = symbols;
   }
 
-  public generateSymbols(tileCount: number): Symbol[] {
+  public generateSymbols(rows: number, cols: number): Symbol[] {
+    const tileCount = rows * cols;
     if (this.symbols.length !== tileCount) {
       throw new Error('FixedSymbolSource requires symbol count to match tile count.');
     }

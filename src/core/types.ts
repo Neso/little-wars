@@ -1,5 +1,5 @@
 export type Colour = 'GREEN' | 'ORANGE';
-export type SymbolType = 'EMPTY' | 'COIN' | 'SOLDIER';
+export type SymbolType = 'EMPTY' | 'COIN' | 'SOLDIER' | 'TANK';
 
 export interface MultiplierThreshold {
   tilesRequired: number;
@@ -23,6 +23,7 @@ export interface SymbolDistribution {
   empty: number;
   coin: number;
   soldier: number;
+  tank?: number;
 }
 
 export interface CoinValueWeight {
@@ -37,6 +38,11 @@ export interface CoinValueDistributionPerMatch {
 
 export type CoinValueDistribution = Record<Colour, CoinValueDistributionPerMatch>;
 
+export interface TankReelWeights {
+  GREEN: number[];
+  ORANGE: number[];
+}
+
 export interface GameConfig {
   startingBalance: number;
   bet: BetConfig;
@@ -45,6 +51,7 @@ export interface GameConfig {
   multipliers: Record<Colour, MultiplierThreshold[]>;
   symbolDistribution: SymbolDistribution;
   coinValueDistribution: CoinValueDistribution;
+  tankReelWeights: TankReelWeights;
 }
 
 export interface BaseSymbol {
@@ -66,7 +73,12 @@ export interface SoldierSymbol extends BaseSymbol {
   colour: Colour;
 }
 
-export type Symbol = EmptySymbol | CoinSymbol | SoldierSymbol;
+export interface TankSymbol extends BaseSymbol {
+  type: 'TANK';
+  colour: Colour;
+}
+
+export type Symbol = EmptySymbol | CoinSymbol | SoldierSymbol | TankSymbol;
 
 export interface Tile {
   id: string;

@@ -25,7 +25,7 @@ const app = new Application({
 const config = GameConfigLoader.load();
 const engine = new GameEngine(
   config,
-  new WeightedSymbolSource(config.symbolDistribution, config.coinValueDistribution)
+  new WeightedSymbolSource(config.symbolDistribution, config.coinValueDistribution, config.tankReelWeights)
 );
 const hud = new Hud(config, () => ui.spin());
 const modal = new RoundModal();

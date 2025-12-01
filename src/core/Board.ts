@@ -30,6 +30,32 @@ export class Board {
     tile.colour = colour;
   }
 
+  public getTile(tileId: string): Tile | undefined {
+    return this.tiles.find((t) => t.id === tileId);
+  }
+
+  public getAdjacent(tileId: string): Tile[] {
+    const tile = this.getTile(tileId);
+    if (!tile) return [];
+    const deltas = [
+      { dr: -1, dc: 0 },
+      { dr: 1, dc: 0 },
+      { dr: 0, dc: -1 },
+      { dr: 0, dc: 1 }
+    ];
+    const adj: Tile[] = [];
+    deltas.forEach(({ dr, dc }) => {
+      const row = tile.row + dr;
+      const col = tile.col + dc;
+      if (row >= 0 && row < ROWS && col >= 0 && col < COLS) {
+        const id = `${row}-${col}`;
+        const found = this.getTile(id);
+        if (found) adj.push(found);
+      }
+    });
+    return adj;
+  }
+
   public countColours(): { GREEN: number; ORANGE: number } {
     return this.tiles.reduce(
       (acc, tile) => {
