@@ -32,33 +32,67 @@
 
       .top-info {
         display: grid;
-        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        grid-template-columns: 1fr 1fr;
         gap: 12px;
-        background: #16222f;
+        background: #0f1722;
         padding: 12px 16px;
-        border-radius: 8px;
+        border-radius: 10px;
         box-shadow: 0 2px 8px rgba(0, 0, 0, 0.35);
       }
 
-      .top-info .card {
-        display: flex;
-        flex-direction: column;
-        gap: 4px;
-        padding: 8px 10px;
-        background: #1f3044;
-        border-radius: 6px;
+      .top-info .side {
+        background: linear-gradient(135deg, #12372f, #0f2529);
+        border-radius: 8px;
+        padding: 10px 12px;
+        display: grid;
+        grid-template-rows: auto auto auto;
+        gap: 6px;
+      }
+
+      .top-info .side.orange {
+        background: linear-gradient(135deg, #2b1e14, #27140f);
       }
 
       .top-info .label {
         font-size: 12px;
-        color: #9cb3c9;
+        letter-spacing: 0.06em;
         text-transform: uppercase;
-        letter-spacing: 0.04em;
+        opacity: 0.7;
       }
 
-      .top-info .value {
-        font-size: 22px;
-        font-weight: 700;
+      .top-info .count {
+        font-size: 34px;
+        font-weight: 800;
+      }
+
+      .top-info .next {
+        font-size: 13px;
+        opacity: 0.85;
+      }
+
+      .top-info .mult {
+        font-size: 18px;
+        font-weight: 800;
+      }
+
+      .top-info .green .count,
+      .top-info .green .mult {
+        color: #2fbf71;
+      }
+
+      .top-info .orange .count,
+      .top-info .orange .mult {
+        color: #ff9c4a;
+      }
+
+      .top-info .orange .label,
+      .top-info .orange .next {
+        color: #ffce9f;
+      }
+
+      .top-info .green .label,
+      .top-info .green .next {
+        color: #a7f3c9;
       }
 
       .hud {
@@ -177,13 +211,17 @@
     <div id="app">
       <div class="shell">
         <div class="top-info">
-          <div class="card">
-            <div class="label">Tiles</div>
-            <div class="value" id="hud-tiles">–</div>
+          <div class="side green">
+            <div class="label">Green Tiles</div>
+            <div class="count" id="hud-tiles-green">–</div>
+            <div class="next" id="hud-next-green">Next +1x at –</div>
+            <div class="mult" id="hud-mult-green">–x</div>
           </div>
-          <div class="card">
-            <div class="label">Multipliers</div>
-            <div class="value" id="hud-mults">–</div>
+          <div class="side orange">
+            <div class="label">Orange Tiles</div>
+            <div class="count" id="hud-tiles-orange">–</div>
+            <div class="next" id="hud-next-orange">Next +1x at –</div>
+            <div class="mult" id="hud-mult-orange">–x</div>
           </div>
         </div>
         <div id="canvas-container"></div>

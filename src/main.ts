@@ -27,7 +27,7 @@ const engine = new GameEngine(
   config,
   new WeightedSymbolSource(config.symbolDistribution, config.coinValueDistribution)
 );
-const hud = new Hud(() => ui.spin());
+const hud = new Hud(config, () => ui.spin());
 const modal = new RoundModal();
 const ui = new MainUI(engine, app, hud, modal);
 
@@ -52,5 +52,17 @@ view.addEventListener('click', () => {
   const state = engine.getState();
   if (!state.roundActive || state.remainingSpins <= 0) {
     ui.spin();
+  }
+});
+
+window.addEventListener('keydown', (e) => {
+  if (e.code === 'Space') {
+    e.preventDefault();
+    const state = engine.getState();
+    if (ui['animating']) {
+      ui.skipAnimation();
+    } else if (!state.roundActive || state.remainingSpins <= 0) {
+      ui.spin();
+    }
   }
 });
