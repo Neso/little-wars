@@ -1,5 +1,5 @@
 import { Tile } from '@core/types';
-import { Application, Container, Graphics, Rectangle, Sprite, Texture } from 'pixi.js';
+import { Application, Container, Graphics, Rectangle, Sprite, Texture, Text, TextStyle } from 'pixi.js';
 
 const textures = {
   coin: {
@@ -19,6 +19,7 @@ export class GameMachine {
   private tilesLayer: Container;
   private flickerLayer: Container;
   private symbolsLayer: Container;
+  private payoutLayer: Container;
   private dimmed = false;
   private viewportWidth = 320;
   private viewportHeight = 280;
@@ -34,6 +35,8 @@ export class GameMachine {
     this.container.addChild(this.tilesLayer);
     this.container.addChild(this.flickerLayer);
     this.container.addChild(this.symbolsLayer);
+    this.payoutLayer = new Container();
+    this.container.addChild(this.payoutLayer);
     this.app.stage.addChild(this.container);
   }
 
@@ -53,10 +56,11 @@ export class GameMachine {
     this.skipRequested = true;
   }
 
-  public update(tiles: Tile[]): void {
+  public update(tiles: Tile[], payouts?: { tileId: string; amount: number }[]): void {
     const layout = this.computeLayout(tiles);
     this.tilesLayer.removeChildren();
     this.symbolsLayer.removeChildren();
+    this.payoutLayer.removeChildren();
     if (!tiles.length) return;
 
     const changed: Tile[] = [];
@@ -83,10 +87,16 @@ export class GameMachine {
     });
 
     this.flashChangedTiles(changed, layout);
+    this.showPayouts(payouts ?? [], tiles, layout);
     this.lastColours = new Map(tiles.map((t) => [t.id, t.colour]));
   }
 
-  public animateSpin(tiles: Tile[], durationMs = 500, columnDelayMs = 120): Promise<void> {
+  public animateSpin(
+    tiles: Tile[],
+    payouts?: { tileId: string; amount: number }[],
+    durationMs = 500,
+    columnDelayMs = 120
+  ): Promise<void> {
     const layout = this.computeLayout(tiles);
     this.skipRequested = false;
     this.tilesLayer.removeChildren();
@@ -110,7 +120,7 @@ export class GameMachine {
       resolved = true;
       this.container.removeChild(overlay);
       this.setOpacity(false);
-      this.update(tiles);
+      this.update(tiles, payouts);
     };
 
     return new Promise((resolve) => {
@@ -213,6 +223,39 @@ export class GameMachine {
     sprite.width = texture.width * scale;
     sprite.height = texture.height * scale;
     return sprite;
+  }
+
+  private showPayouts(
+    payouts: { tileId: string; amount: number }[],
+    tiles: Tile[],
+    layout: { offsetX: number; offsetY: number; tileSize: number; padding: number; size: number }
+  ): void {
+    if (!payouts.length) return;
+    const tileMap = new Map(tiles.map((t) => [t.id, t]));
+    payouts.forEach((payout) => {
+      const tile = tileMap.get(payout.tileId);
+      if (!tile) return;
+      const { x, y } = this.positionFor(tile, layout);
+      const txt = new Text(`+${payout.amount}`, new TextStyle({ fill: '#ffffff', fontSize: 22, fontWeight: '800' }));
+      txt.x = x + layout.size / 2 - txt.width / 2;
+      txt.y = y + layout.size / 2 - txt.height / 2;
+      this.payoutLayer.addChild(txt);
+      const startY = txt.y;
+      const duration = 700;
+      const start = performance.now();
+      const animate = (now: number) => {
+        const t = Math.min(1, (now - start) / duration);
+        const eased = 1 - Math.pow(1 - t, 2);
+        txt.alpha = 1 - eased;
+        txt.y = startY - eased * 20;
+        if (t < 1) {
+          requestAnimationFrame(animate);
+        } else {
+          this.payoutLayer.removeChild(txt);
+        }
+      };
+      requestAnimationFrame(animate);
+    });
   }
 
   private flashChangedTiles(changed: Tile[], layout: { offsetX: number; offsetY: number; tileSize: number; padding: number; size: number }): void {

@@ -50,6 +50,7 @@ export class GameEngine {
     this.state.totalWin = 0;
     this.state.lastSpinWin = 0;
     this.state.lastRoundWin = undefined;
+    this.state.lastSpinPayouts = [];
     this.state.roundActive = true;
     this.board.clearSymbols();
     this.updateTileCountsAndMultipliers();
@@ -67,6 +68,7 @@ export class GameEngine {
 
     this.state.remainingSpins -= 1;
     this.state.lastSpinWin = 0;
+    this.state.lastSpinPayouts = [];
 
     const symbols = this.symbolSource.generateSymbols(TILE_COUNT);
     this.applySymbolsToBoard(symbols);
@@ -123,6 +125,7 @@ export class GameEngine {
         const win = this.state.bet * multiplier * symbol.value;
         this.state.totalWin += win;
         this.state.lastSpinWin = (this.state.lastSpinWin ?? 0) + win;
+        this.state.lastSpinPayouts?.push({ tileId: tile.id, amount: win });
       } else {
         this.board.setTileColour(tile.id, symbol.colour);
       }
