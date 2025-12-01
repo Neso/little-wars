@@ -1,0 +1,53 @@
+{
+  "startingBalance": 1000,
+  "bet": {
+    "min": 1,
+    "max": 100,
+    "step": 1,
+    "defaultBet": 1
+  },
+  "spinsPerRound": 3,
+  "spinResetRules": [
+    { "symbolType": "COIN", "minCount": 1, "resetToSpins": 1 },
+    { "symbolType": "SOLDIER", "minCount": 1, "resetToSpins": 1 }
+  ],
+  "symbolDistribution": {
+    "empty": 0.7,
+    "coin": 0.15,
+    "soldier": 0.15
+  },
+  "coinValueDistribution": {
+    "GREEN": [
+      { "value": 1, "weight": 0.3 },
+      { "value": 2, "weight": 0.25 },
+      { "value": 3, "weight": 0.25 },
+      { "value": 25, "weight": 0.1 },
+      { "value": 50, "weight": 0.05 },
+      { "value": 100, "weight": 0.05 }
+    ],
+    "ORANGE": [
+      { "value": 1, "weight": 0.3 },
+      { "value": 2, "weight": 0.25 },
+      { "value": 3, "weight": 0.25 },
+      { "value": 25, "weight": 0.1 },
+      { "value": 50, "weight": 0.05 },
+      { "value": 100, "weight": 0.05 }
+    ]
+  },
+  "multipliers": {
+    "GREEN": [
+      { "tilesRequired": 0, "multiplier": 1 },
+      { "tilesRequired": 18, "multiplier": 2 },
+      { "tilesRequired": 20, "multiplier": 3 },
+      { "tilesRequired": 25, "multiplier": 5 },
+      { "tilesRequired": 30, "multiplier": 10 }
+    ],
+    "ORANGE": [
+      { "tilesRequired": 0, "multiplier": 1 },
+      { "tilesRequired": 18, "multiplier": 2 },
+      { "tilesRequired": 20, "multiplier": 3 },
+      { "tilesRequired": 25, "multiplier": 5 },
+      { "tilesRequired": 30, "multiplier": 10 }
+    ]
+  }
+}
