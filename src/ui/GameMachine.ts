@@ -56,7 +56,11 @@ export class GameMachine {
     this.skipRequested = true;
   }
 
-  public update(tiles: Tile[], payouts?: { tileId: string; amount: number }[]): void {
+  public update(
+    tiles: Tile[],
+    payouts?: { tileId: string; amount: number }[],
+    multipliers?: { GREEN: number; ORANGE: number }
+  ): void {
     const layout = this.computeLayout(tiles);
     this.tilesLayer.removeChildren();
     this.symbolsLayer.removeChildren();
@@ -80,10 +84,10 @@ export class GameMachine {
       graphic.endFill();
       this.tilesLayer.addChild(graphic);
 
-      const sprite = this.createSymbolSprite(tile, layout.size);
-      sprite.x = x + (layout.size - sprite.width) / 2;
-      sprite.y = y + (layout.size - sprite.height) / 2;
-      this.symbolsLayer.addChild(sprite);
+      const container = this.createSymbolContainer(tile, layout.size, multipliers);
+      container.x = x + (layout.size - container.width) / 2;
+      container.y = y + (layout.size - container.height) / 2;
+      this.symbolsLayer.addChild(container);
     });
 
     this.flashChangedTiles(changed, layout);
@@ -95,6 +99,7 @@ export class GameMachine {
     tiles: Tile[],
     payouts?: { tileId: string; amount: number }[],
     prevTiles?: Tile[],
+    multipliers?: { GREEN: number; ORANGE: number },
     durationMs = 500,
     columnDelayMs = 120
   ): Promise<void> {
@@ -124,7 +129,7 @@ export class GameMachine {
       resolved = true;
       this.container.removeChild(overlay);
       this.setOpacity(false);
-      this.update(tiles, payouts);
+      this.update(tiles, payouts, multipliers);
     };
 
     return new Promise((resolve) => {
@@ -152,24 +157,24 @@ export class GameMachine {
           }
           colTiles.forEach((tile) => {
             const { x, y } = this.positionFor(tile, layout);
-            const sprite = this.createSymbolSprite(tile, layout.size);
-            sprite.x = x + (layout.size - sprite.width) / 2;
-            sprite.y = -layout.size * 2; // start above view
-            overlay.addChild(sprite);
+            const container = this.createSymbolContainer(tile, layout.size, multipliers);
+            container.x = x + (layout.size - container.width) / 2;
+            container.y = -layout.size * 2; // start above view
+            overlay.addChild(container);
 
-            const targetY = y + (layout.size - sprite.height) / 2;
-            const startY = sprite.y;
+            const targetY = y + (layout.size - container.height) / 2;
+            const startY = container.y;
             const startTime = performance.now();
 
             const animate = (now: number) => {
               if (this.skipRequested) {
-                sprite.y = targetY;
+                container.y = targetY;
                 markDone();
                 return;
               }
               const t = Math.min(1, (now - startTime) / durationMs);
               const eased = 1 - (1 - t) * (1 - t);
-              sprite.y = startY + (targetY - startY) * eased;
+              container.y = startY + (targetY - startY) * eased;
               if (t < 1) {
                 requestAnimationFrame(animate);
               } else {
@@ -216,7 +221,11 @@ export class GameMachine {
     });
   }
 
-  private createSymbolSprite(tile: Tile, tileSize: number): Sprite {
+  private createSymbolContainer(
+    tile: Tile,
+    tileSize: number,
+    multipliers: { GREEN: number; ORANGE: number } = { GREEN: 1, ORANGE: 1 }
+  ): Container {
     const symbol = tile.symbol;
     let texture = textures.broken;
     if (symbol?.type === 'COIN') texture = textures.coin[symbol.colour];
@@ -226,7 +235,21 @@ export class GameMachine {
     const scale = desired / Math.max(texture.width, texture.height);
     sprite.width = texture.width * scale;
     sprite.height = texture.height * scale;
-    return sprite;
+    const container = new Container();
+    container.addChild(sprite);
+
+    if (symbol?.type === 'COIN') {
+      const mult = multipliers[symbol.colour] ?? 1;
+      const label = new Text(
+        `x${mult}`,
+        new TextStyle({ fill: '#fff', fontSize: 22, fontWeight: '900', stroke: '#000', strokeThickness: 4 })
+      );
+      label.x = sprite.width / 2 - label.width / 2;
+      label.y = sprite.height - label.height;
+      container.addChild(label);
+    }
+
+    return container;
   }
 
   private showPayouts(

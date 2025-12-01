@@ -60,7 +60,7 @@ export class MainUI {
     const prevTiles = this.engine.getState().tiles;
     const newState = this.engine.spin();
     this.syncUI(newState, { skipBoard: true });
-    await this.gameMachine.animateSpin(newState.tiles, newState.lastSpinPayouts, prevTiles);
+    await this.gameMachine.animateSpin(newState.tiles, newState.lastSpinPayouts, prevTiles, newState.multipliers);
     this.gameMachine.setOpacity(false);
     this.animating = false;
   }
@@ -80,7 +80,7 @@ export class MainUI {
       maxTiles: state.greenTileCount + state.orangeTileCount
     });
     if (!opts?.skipBoard) {
-      this.gameMachine.update(state.tiles, state.lastSpinPayouts);
+      this.gameMachine.update(state.tiles, state.lastSpinPayouts, state.multipliers);
     }
     this.hud?.update(state);
     if (!state.roundActive && state.lastRoundWin !== undefined) {
