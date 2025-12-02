@@ -94,6 +94,7 @@ export class MainUI {
     const prevTiles = this.engine.getState().tiles;
     const newState = await this.engine.spin();
     this.gameMachine.onBoardSettled = () => {
+      this.updateTopBar(newState);
     };
     this.logger.log(`Round start - bet ${newState.bet}`);
     // First update without touching the board or top bar so animations reflect visual state.
