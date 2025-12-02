@@ -27,9 +27,15 @@ const engine = new GameEngine(
   config,
   new WeightedSymbolSource(config.symbolDistribution, config.coinValueDistribution, config.tankReelWeights)
 );
-const hud = new Hud(config, () => ui.spin());
+let ui: MainUI;
+const hud = new Hud(
+  config,
+  () => ui.spin(),
+  () => ui.betUp(),
+  () => ui.betDown()
+);
 const modal = new RoundModal();
-const ui = new MainUI(engine, app, hud, modal);
+ui = new MainUI(engine, app, hud, modal);
 
 const view = app.view as HTMLCanvasElement;
 view.style.width = '100%';

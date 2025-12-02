@@ -97,10 +97,10 @@
 
       .hud {
         display: grid;
-        grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
-        gap: 10px;
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        gap: 12px;
         background: #16222f;
-        padding: 10px 12px;
+        padding: 12px 14px;
         border-radius: 8px;
         box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
         align-items: center;
@@ -109,7 +109,7 @@
       .hud .card {
         display: flex;
         flex-direction: column;
-        gap: 2px;
+        gap: 4px;
         padding: 8px 10px;
         background: #1f3044;
         border-radius: 6px;
@@ -123,8 +123,30 @@
       }
 
       .hud .value {
-        font-size: 15px;
-        font-weight: 600;
+        font-size: 18px;
+        font-weight: 700;
+      }
+
+      .bet-controls {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+      }
+
+      .bet-btn {
+        width: 28px;
+        height: 28px;
+        border-radius: 4px;
+        border: none;
+        background: #2b3d52;
+        color: #e8f1f2;
+        cursor: pointer;
+        font-weight: 800;
+      }
+
+      .bet-btn:disabled {
+        opacity: 0.3;
+        cursor: not-allowed;
       }
 
       .controls {
@@ -240,7 +262,11 @@
           </div>
           <div class="card">
             <div class="label">Bet</div>
-            <div class="value" id="hud-bet">–</div>
+            <div class="bet-controls">
+              <button class="bet-btn" id="bet-down">▼</button>
+              <div class="value" id="hud-bet">–</div>
+              <button class="bet-btn" id="bet-up">▲</button>
+            </div>
           </div>
           <div class="controls">
             <button class="spin" id="hud-spin">Spin</button>

@@ -25,7 +25,9 @@ export class MainUI {
   constructor(engine: GameEngine, app: Application, hud?: Hud, modal?: RoundModal) {
     this.engine = engine;
     this.spinController = new SpinController(() => this.handleSpin());
-    this.betController = new BetController((bet) => this.engine.setBet(bet));
+    this.betController = new BetController(engine['config']?.bet?.levels ?? [], (bet) =>
+      this.engine.setBet(bet)
+    );
     this.balanceController = new BalanceController();
     this.totalWinController = new TotalWinController();
     this.topBar = new TopBar();
@@ -49,6 +51,20 @@ export class MainUI {
     if (this.animating) {
       this.gameMachine.skipAnimation();
     }
+  }
+
+  public betUp(): void {
+    if (this.animating) return;
+    const next = this.betController.increase();
+    this.engine.setBet(next);
+    this.syncUI(this.engine.getState());
+  }
+
+  public betDown(): void {
+    if (this.animating) return;
+    const next = this.betController.decrease();
+    this.engine.setBet(next);
+    this.syncUI(this.engine.getState());
   }
 
   public isAnimating(): boolean {
@@ -90,7 +106,7 @@ export class MainUI {
       this.gameMachine.update(state.tiles, state.lastSpinPayouts, state.multipliers);
     }
     this.hud?.update(state);
-    if (!state.roundActive && state.lastRoundWin !== undefined) {
+    if (!state.roundActive && state.lastRoundWin !== undefined && state.lastRoundWasFreeSpin) {
       this.modal?.show(state.lastRoundWin);
     } else {
       this.modal?.hide();

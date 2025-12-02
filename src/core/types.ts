@@ -107,6 +107,7 @@ export interface GameState {
   lastRoundWin?: number;
   lastSpinPayouts?: { tileId: string; amount: number }[];
   freeSpinActive: boolean;
+  lastRoundWasFreeSpin?: boolean;
   remainingSpins: number;
   maxSpinsPerRound: number;
   greenTileCount: number;

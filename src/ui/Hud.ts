@@ -14,9 +14,13 @@ export class Hud {
   private multGreenEl: HTMLElement | null;
   private multOrangeEl: HTMLElement | null;
   private spinButton: HTMLButtonElement | null;
+  private betUpBtn: HTMLButtonElement | null;
+  private betDownBtn: HTMLButtonElement | null;
   private onSpin?: () => void;
+  private onBetUp?: () => void;
+  private onBetDown?: () => void;
 
-  constructor(config: GameConfig, onSpin?: () => void) {
+  constructor(config: GameConfig, onSpin?: () => void, onBetUp?: () => void, onBetDown?: () => void) {
     this.config = config;
     this.balanceEl = document.getElementById('hud-balance');
     this.totalWinEl = document.getElementById('hud-totalwin');
@@ -29,13 +33,23 @@ export class Hud {
     this.multGreenEl = document.getElementById('hud-mult-green');
     this.multOrangeEl = document.getElementById('hud-mult-orange');
     this.spinButton = document.getElementById('hud-spin') as HTMLButtonElement | null;
+    this.betUpBtn = document.getElementById('bet-up') as HTMLButtonElement | null;
+    this.betDownBtn = document.getElementById('bet-down') as HTMLButtonElement | null;
     this.onSpin = onSpin;
+    this.onBetUp = onBetUp;
+    this.onBetDown = onBetDown;
     this.bind();
   }
 
   private bind(): void {
     if (this.spinButton) {
       this.spinButton.onclick = () => this.onSpin?.();
+    }
+    if (this.betUpBtn) {
+      this.betUpBtn.onclick = () => this.onBetUp?.();
+    }
+    if (this.betDownBtn) {
+      this.betDownBtn.onclick = () => this.onBetDown?.();
     }
   }
 
@@ -54,6 +68,12 @@ export class Hud {
       (this.nextOrangeEl.textContent = nextOrange ? `Next +1x at ${nextOrange}` : 'Max multiplier');
     this.multGreenEl && (this.multGreenEl.textContent = `${state.multipliers.GREEN}x`);
     this.multOrangeEl && (this.multOrangeEl.textContent = `${state.multipliers.ORANGE}x`);
+    if (this.betUpBtn)
+      this.betUpBtn.disabled =
+        !state.bet || (this.config.bet.levels?.length ? state.bet >= Math.max(...this.config.bet.levels) : false);
+    if (this.betDownBtn)
+      this.betDownBtn.disabled =
+        !state.bet || (this.config.bet.levels?.length ? state.bet <= Math.min(...this.config.bet.levels) : false);
   }
 
   private nextThreshold(colour: 'GREEN' | 'ORANGE', count: number): number | null {
