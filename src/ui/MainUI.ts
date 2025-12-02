@@ -9,6 +9,7 @@ import { TopBar } from './TopBar';
 import { GameMachine } from './GameMachine';
 import { Hud } from './Hud';
 import { RoundModal } from './RoundModal';
+import { Logger } from './Logger';
 
 export class MainUI {
   private engine: GameEngine;
@@ -20,6 +21,7 @@ export class MainUI {
   private gameMachine: GameMachine;
   private hud?: Hud;
   private modal?: RoundModal;
+  private logger: Logger;
   private animating = false;
 
   constructor(engine: GameEngine, app: Application, hud?: Hud, modal?: RoundModal) {
@@ -34,6 +36,7 @@ export class MainUI {
     this.gameMachine = new GameMachine(app);
     this.hud = hud;
     this.modal = modal;
+    this.logger = new Logger();
     this.syncUI(this.engine.getState());
   }
 
@@ -75,14 +78,37 @@ export class MainUI {
     if (this.animating) {
       return;
     }
+    const before = this.engine.getState();
+    this.logger.log(`Game start - bet ${before.bet}, balance ${before.balance - before.bet}`);
+    if (this.hud) {
+      this.hud.update({
+        ...before,
+        totalWin: 0,
+        roundWin: 0
+      });
+    }
     this.animating = true;
     this.gameMachine.setOpacity(true);
     const prevTiles = this.engine.getState().tiles;
     const newState = this.engine.spin();
+    this.logger.log(`Round start - bet ${newState.bet}`);
     this.syncUI(newState, { skipBoard: true });
     await this.gameMachine.animateSpin(newState.tiles, newState.lastSpinPayouts, prevTiles, newState.multipliers);
     if (newState.lastSpinWin && newState.lastSpinWin > 0) {
       this.gameMachine.showTotalWin(newState.lastSpinWin);
+    }
+    if (!newState.roundActive) {
+      const rw = newState.lastRoundWin ?? 0;
+      this.logger.log(`Round end - round win ${rw}`);
+      this.logger.log(`Game end - paid ${rw} to balance ${newState.balance}`);
+    } else if (newState.freeSpinActive) {
+      this.logger.log(
+        `Free spins continue - remaining ${newState.remainingSpins}, total win ${newState.totalWin}`
+      );
+    } else {
+      this.logger.log(
+        `Round result - win ${newState.roundWin}, total ${newState.totalWin}, balance ${newState.balance}`
+      );
     }
     this.gameMachine.setOpacity(false);
     this.animating = false;

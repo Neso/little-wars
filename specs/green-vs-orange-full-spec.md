@@ -171,9 +171,9 @@ export interface GameConfig {
     ORANGE: number[]; // per-column tank probability for ORANGE tanks (length 6)
   };
   freeSpinMode?: {
-    enabled: boolean;
-    triggerSymbol?: SymbolType;
-    spinsPerRound: number;
+    enabled: boolean;           // default false
+    triggerSymbol?: SymbolType; // special symbol that grants free spins
+    spinsPerRound: number;      // spins granted when triggered
   };
 }
 ```
@@ -243,8 +243,8 @@ export interface GameConfig {
     "ORANGE": [0.0, 0.002, 0.003, 0.004, 0.005, 0.006]
   },
   "freeSpinMode": {
-    "enabled": true,
-    "triggerSymbol": "TANK",
+    "enabled": false,
+    "triggerSymbol": null,
     "spinsPerRound": 3
   },
   "multipliers": {

@@ -55,8 +55,10 @@ export class Hud {
 
   public update(state: GameState): void {
     this.balanceEl && (this.balanceEl.textContent = state.balance.toString());
-    this.totalWinEl && (this.totalWinEl.textContent = state.totalWin.toString());
-    this.spinWinEl && (this.spinWinEl.textContent = state.lastSpinWin?.toString() ?? '0');
+    const displayTotal = state.roundActive ? state.totalWin : state.lastRoundWin ?? state.totalWin;
+    const displayRound = state.roundActive ? state.roundWin : state.lastRoundWin ?? state.roundWin;
+    this.totalWinEl && (this.totalWinEl.textContent = displayTotal.toString());
+    this.spinWinEl && (this.spinWinEl.textContent = displayRound.toString());
     this.betEl && (this.betEl.textContent = state.bet.toString());
     this.tilesGreenEl && (this.tilesGreenEl.textContent = `${state.greenTileCount}`);
     this.tilesOrangeEl && (this.tilesOrangeEl.textContent = `${state.orangeTileCount}`);

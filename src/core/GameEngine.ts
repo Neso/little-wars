@@ -55,7 +55,7 @@ export class GameEngine {
     this.state.remainingSpins = 1;
     this.state.maxSpinsPerRound = 1;
     this.state.totalWin = 0;
-    this.state.lastSpinWin = 0;
+    this.state.roundWin = 0;
     this.state.lastRoundWin = undefined;
     this.state.lastSpinPayouts = [];
     this.state.roundActive = true;
@@ -74,7 +74,7 @@ export class GameEngine {
     }
 
     this.state.remainingSpins -= 1;
-    this.state.lastSpinWin = 0;
+    this.state.roundWin = 0;
     this.state.lastSpinPayouts = [];
 
     const symbols = this.symbolSource.generateSymbols(ROWS, COLS);
@@ -93,7 +93,7 @@ export class GameEngine {
       balance: this.config.startingBalance,
       bet: this.config.bet.defaultBet,
       totalWin: 0,
-      lastSpinWin: 0,
+      roundWin: 0,
       lastRoundWin: undefined,
       lastSpinPayouts: [],
       freeSpinActive: false,
@@ -141,7 +141,7 @@ export class GameEngine {
         const multiplier = this.state.multipliers[symbol.colour];
         const win = this.state.bet * multiplier * coinValue;
         this.state.totalWin += win;
-        this.state.lastSpinWin = (this.state.lastSpinWin ?? 0) + win;
+        this.state.roundWin = this.state.totalWin;
         this.state.lastSpinPayouts?.push({ tileId: tile.id, amount: win });
       } else {
         this.board.setTileColour(tile.id, symbol.colour);
@@ -251,9 +251,9 @@ export class GameEngine {
     }
     const roundWin = this.state.totalWin;
     this.state.lastRoundWin = roundWin;
+    this.state.roundWin = 0;
     this.state.balance += roundWin;
     this.state.totalWin = 0;
-    this.state.lastSpinWin = 0;
     this.state.lastRoundWasFreeSpin = this.state.freeSpinActive;
     this.state.freeSpinActive = false;
     this.state.maxSpinsPerRound = 1;

@@ -23,7 +23,7 @@ describe('GameEngine', () => {
 
     expect(state.totalWin).toBe(0); // round ended, winnings banked
     expect(state.lastRoundWin).toBe(2);
-    expect(state.lastSpinWin).toBe(0); // reset after round end
+    expect(state.roundWin).toBe(0); // reset after round end
     expect(state.balance).toBe(1001); // 1000 - 1 bet + 2 win
     expect(state.greenTileCount).toBe(15);
     expect(state.orangeTileCount).toBe(15);
