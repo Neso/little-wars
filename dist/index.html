@@ -24,9 +24,53 @@
         max-width: 1200px;
         height: 100%;
         display: flex;
-        flex-direction: column;
+        flex-direction: row;
         padding: 16px 16px 12px;
         box-sizing: border-box;
+        gap: 12px;
+      }
+
+      .log-panel {
+        width: 260px;
+        background: #0f1722;
+        border-radius: 10px;
+        padding: 12px;
+        box-sizing: border-box;
+        box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.05);
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+        overflow: hidden;
+      }
+
+      .log-title {
+        font-size: 14px;
+        font-weight: 700;
+        letter-spacing: 0.04em;
+        text-transform: uppercase;
+        color: #9cb3c9;
+      }
+
+      .log-list {
+        flex: 1;
+        overflow-y: auto;
+        display: flex;
+        flex-direction: column;
+        gap: 6px;
+      }
+
+      .log-entry {
+        font-size: 12px;
+        background: #16222f;
+        border-radius: 6px;
+        padding: 6px 8px;
+        color: #dce7f0;
+      }
+
+      .main-column {
+        flex: 1;
+        display: flex;
+        flex-direction: column;
         gap: 10px;
       }
 
@@ -97,10 +141,10 @@
 
       .hud {
         display: grid;
-        grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
-        gap: 10px;
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        gap: 12px;
         background: #16222f;
-        padding: 10px 12px;
+        padding: 12px 14px;
         border-radius: 8px;
         box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
         align-items: center;
@@ -109,7 +153,7 @@
       .hud .card {
         display: flex;
         flex-direction: column;
-        gap: 2px;
+        gap: 4px;
         padding: 8px 10px;
         background: #1f3044;
         border-radius: 6px;
@@ -123,8 +167,30 @@
       }
 
       .hud .value {
-        font-size: 15px;
-        font-weight: 600;
+        font-size: 18px;
+        font-weight: 700;
+      }
+
+      .bet-controls {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+      }
+
+      .bet-btn {
+        width: 28px;
+        height: 28px;
+        border-radius: 4px;
+        border: none;
+        background: #2b3d52;
+        color: #e8f1f2;
+        cursor: pointer;
+        font-weight: 800;
+      }
+
+      .bet-btn:disabled {
+        opacity: 0.3;
+        cursor: not-allowed;
       }
 
       .controls {
@@ -206,49 +272,55 @@
         cursor: pointer;
       }
     </style>
-    <script type="module" crossorigin src="./assets/index-CxIWIsaO.js"></script>
+    <script type="module" crossorigin src="./assets/index-r4BiJSZ8.js"></script>
   </head>
   <body>
     <div id="app">
       <div class="shell">
-        <div class="top-info">
-          <div class="side green">
-            <div class="label">Green Tiles</div>
-            <div class="count" id="hud-tiles-green">–</div>
-            <div class="next" id="hud-next-green">Next +1x at –</div>
-            <div class="mult" id="hud-mult-green">–x</div>
-          </div>
-          <div class="side orange">
-            <div class="label">Orange Tiles</div>
-            <div class="count" id="hud-tiles-orange">–</div>
-            <div class="next" id="hud-next-orange">Next +1x at –</div>
-            <div class="mult" id="hud-mult-orange">–x</div>
-          </div>
+        <div class="log-panel">
+          <div class="log-title">Log</div>
+          <div class="log-list" id="log-list"></div>
         </div>
-        <div id="canvas-container"></div>
-        <div class="hud">
-          <div class="card">
-            <div class="label">Balance</div>
-            <div class="value" id="hud-balance">–</div>
+        <div class="main-column">
+          <div class="top-info">
+            <div class="side green">
+              <div class="label">Green Tiles</div>
+              <div class="count" id="hud-tiles-green">–</div>
+              <div class="next" id="hud-next-green">Next +1x at –</div>
+              <div class="mult" id="hud-mult-green">–x</div>
+            </div>
+            <div class="side orange">
+              <div class="label">Orange Tiles</div>
+              <div class="count" id="hud-tiles-orange">–</div>
+              <div class="next" id="hud-next-orange">Next +1x at –</div>
+              <div class="mult" id="hud-mult-orange">–x</div>
+            </div>
           </div>
-          <div class="card">
-            <div class="label">Total Win</div>
-            <div class="value" id="hud-totalwin">–</div>
-          </div>
-          <div class="card">
-            <div class="label">Spin Win</div>
-            <div class="value" id="hud-spinwin">–</div>
-          </div>
-          <div class="card">
-            <div class="label">Bet</div>
-            <div class="value" id="hud-bet">–</div>
-          </div>
-          <div class="card">
-            <div class="label">Spins</div>
-            <div class="value" id="hud-spins">–</div>
-          </div>
-          <div class="controls">
-            <button class="spin" id="hud-spin">Spin</button>
+          <div id="canvas-container"></div>
+          <div class="hud">
+            <div class="card">
+              <div class="label">Balance</div>
+              <div class="value" id="hud-balance">–</div>
+            </div>
+            <div class="card">
+              <div class="label">Total Win</div>
+              <div class="value" id="hud-totalwin">–</div>
+            </div>
+            <div class="card">
+              <div class="label">Round Win</div>
+              <div class="value" id="hud-spinwin">–</div>
+            </div>
+            <div class="card">
+              <div class="label">Bet</div>
+              <div class="bet-controls">
+                <button class="bet-btn" id="bet-down">▼</button>
+                <div class="value" id="hud-bet">–</div>
+                <button class="bet-btn" id="bet-up">▲</button>
+              </div>
+            </div>
+            <div class="controls">
+              <button class="spin" id="hud-spin">Spin</button>
+            </div>
           </div>
         </div>
       </div>

@@ -5,7 +5,7 @@ import { BetController } from './BetController';
 import { SpinController } from './SpinController';
 import { BalanceController } from './BalanceController';
 import { TotalWinController } from './TotalWinController';
-import { TopBar } from './TopBar';
+import { TopBarView } from './TopBarView';
 import { GameMachine } from './GameMachine';
 import { Hud } from './Hud';
 import { RoundModal } from './RoundModal';
@@ -17,7 +17,7 @@ export class MainUI {
   private betController: BetController;
   private balanceController: BalanceController;
   private totalWinController: TotalWinController;
-  private topBar: TopBar;
+  private topBar: TopBarView;
   private gameMachine: GameMachine;
   private hud?: Hud;
   private modal?: RoundModal;
@@ -32,7 +32,7 @@ export class MainUI {
     );
     this.balanceController = new BalanceController();
     this.totalWinController = new TotalWinController();
-    this.topBar = new TopBar();
+    this.topBar = new TopBarView();
     this.gameMachine = new GameMachine(app);
     this.hud = hud;
     this.modal = modal;
@@ -93,14 +93,26 @@ export class MainUI {
     this.gameMachine.setOpacity(true);
     const prevTiles = this.engine.getState().tiles;
     const newState = await this.engine.spin();
+    this.gameMachine.onBoardSettled = () => {
+    };
     this.logger.log(`Round start - bet ${newState.bet}`);
     // First update without touching the board or top bar so animations reflect visual state.
     this.syncUI(newState, { skipBoard: true });
-    await this.gameMachine.animateSpin(newState.tiles, newState.lastSpinPayouts, prevTiles, newState.multipliers);
+    await this.gameMachine.animateSpin(
+      newState.tiles,
+      newState.lastSpinPayouts,
+      prevTiles,
+      newState.multipliers
+    );
     // After animations, update everything including top bar and board.
     this.syncUI(newState, { skipBoard: true });
+    this.gameMachine.update(
+      newState.tiles,
+      newState.lastSpinPayouts,
+      newState.multipliers,
+      prevTiles
+    );
     this.updateTopBar(newState);
-    this.gameMachine.update(newState.tiles, newState.lastSpinPayouts, newState.multipliers, prevTiles);
     if (newState.lastSpinWin && newState.lastSpinWin > 0) {
       this.gameMachine.showTotalWin(newState.lastSpinWin);
     }

@@ -33,6 +33,8 @@ export class GameMachine {
   private skipRequested = false;
   private lastColours: Map<string, string> = new Map();
   private animation: AnimationSettings;
+  public onBoardSettled?: () => void;
+  public onAnimationsComplete?: () => void;
 
   constructor(app: Application, container?: Container, animation: AnimationSettings = defaultAnimation) {
     this.app = app;
@@ -69,17 +71,19 @@ export class GameMachine {
     this.skipRequested = true;
   }
 
-  public update(
+  public async update(
     tiles: Tile[],
     payouts?: { tileId: string; amount: number }[],
     multipliers?: { GREEN: number; ORANGE: number },
     prevTiles?: Tile[]
-  ): void {
+  ): Promise<void> {
     const layout = this.computeLayout(tiles);
     this.tilesLayer.removeChildren();
     this.symbolsLayer.removeChildren();
     this.payoutLayer.removeChildren();
-    if (!tiles.length) return;
+    if (!tiles.length) {
+      return Promise.resolve();
+    }
 
     const changed: Tile[] = [];
     const prevMap = prevTiles
@@ -107,9 +111,11 @@ export class GameMachine {
       this.symbolsLayer.addChild(container);
     });
 
-    this.flashChangedTiles(changed, layout);
+    const flickerPromise = this.flashChangedTiles(changed, layout);
     this.showPayouts(payouts ?? [], tiles, layout);
     this.lastColours = new Map(tiles.map((t) => [t.id, t.colour]));
+    await flickerPromise;
+    this.onAnimationsComplete?.();
   }
 
   public animateSpin(
@@ -139,7 +145,8 @@ export class GameMachine {
       resolved = true;
       await this.playTankOverlay(tankTiles, tiles, layout);
       this.container.removeChild(overlay);
-      this.update(tiles, payouts, multipliers);
+      await this.update(tiles, payouts, multipliers, prevTiles);
+      this.onBoardSettled?.();
     };
 
     return new Promise((resolve) => {
@@ -326,9 +333,14 @@ export class GameMachine {
     }, this.animation.totalWinDisplayMs);
   }
 
-  private flashChangedTiles(changed: Tile[], layout: { offsetX: number; offsetY: number; tileSize: number; padding: number; size: number }): void {
+  private flashChangedTiles(
+    changed: Tile[],
+    layout: { offsetX: number; offsetY: number; tileSize: number; padding: number; size: number }
+  ): Promise<void> {
     this.flickerLayer.removeChildren();
-    if (!changed.length) return;
+    if (!changed.length) {
+      return Promise.resolve();
+    }
     const overlays: Graphics[] = [];
     changed.forEach((tile) => {
       const { x, y } = this.positionFor(tile, layout);
@@ -341,21 +353,24 @@ export class GameMachine {
       overlays.push(g);
     });
 
-    let step = 0;
-    const maxSteps = 6; // 3 flickers
-    const interval = 70;
-    const toggle = () => {
-      const visible = step % 2 === 0;
-      overlays.forEach((g) => (g.alpha = visible ? 0.7 : 0));
-      step += 1;
-      if (step <= maxSteps) {
-        setTimeout(toggle, interval);
-      } else {
-        overlays.forEach((g) => (g.alpha = 0));
-        this.flickerLayer.removeChildren();
-      }
-    };
-    toggle();
+    return new Promise((resolve) => {
+      let step = 0;
+      const maxSteps = 6; // 3 flickers
+      const interval = 70;
+      const toggle = () => {
+        const visible = step % 2 === 0;
+        overlays.forEach((g) => (g.alpha = visible ? 0.7 : 0));
+        step += 1;
+        if (step <= maxSteps) {
+          setTimeout(toggle, interval);
+        } else {
+          overlays.forEach((g) => (g.alpha = 0));
+          this.flickerLayer.removeChildren();
+          resolve();
+        }
+      };
+      toggle();
+    });
   }
 
   private playTankOverlay(
@@ -421,6 +436,7 @@ export class GameMachine {
 
     return Promise.all(animations).then(() => {
       this.tankLayer.removeChildren();
+      this.onAnimationsComplete?.();
     });
   }
 
