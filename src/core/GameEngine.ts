@@ -254,8 +254,9 @@ export class GameEngine {
         return;
       }
     }
-    this.state.lastRoundWin = this.state.totalWin;
-    this.state.balance += this.state.totalWin;
+    const roundWin = this.state.totalWin;
+    this.state.lastRoundWin = roundWin;
+    this.state.balance += roundWin;
     this.state.totalWin = 0;
     this.state.lastRoundWasFreeSpin = this.state.freeSpinActive;
     this.state.freeSpinActive = false;

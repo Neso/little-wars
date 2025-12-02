@@ -37,25 +37,18 @@ export class GameMachine {
   constructor(app: Application, container?: Container, animation: AnimationSettings = defaultAnimation) {
     this.app = app;
     this.container = container ?? new Container();
-    this.container.sortableChildren = true;
     this.animation = animation;
     this.tilesLayer = new Container();
     this.flickerLayer = new Container();
     this.symbolsLayer = new Container();
-    this.tilesLayer.zIndex = 1;
-    this.flickerLayer.zIndex = 2;
-    this.symbolsLayer.zIndex = 3;
     this.container.addChild(this.tilesLayer);
     this.container.addChild(this.flickerLayer);
     this.container.addChild(this.symbolsLayer);
     this.payoutLayer = new Container();
-    this.payoutLayer.zIndex = 4;
     this.container.addChild(this.payoutLayer);
     this.tankLayer = new Container();
-    this.tankLayer.zIndex = 5;
     this.container.addChild(this.tankLayer);
     this.totalWinLayer = new Container();
-    this.totalWinLayer.zIndex = 1000;
     this.container.addChild(this.totalWinLayer);
     this.app.stage.addChild(this.container);
   }
