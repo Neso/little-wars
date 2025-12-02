@@ -9,6 +9,8 @@ import {
   Symbol,
   SymbolType
 } from '@core/types';
+import { MathConfig, defaultMathConfig } from '@config/mathConfig';
+import { resolveMathSpin } from '@core/math';
 import { RgsClient } from './RgsClient';
 
 const ROWS = 5;
@@ -16,18 +18,36 @@ const COLS = 6;
 
 export class LocalRgsClient implements RgsClient {
   private config: GameConfig;
-  private symbolSource: SymbolSource;
+  private symbolSource?: SymbolSource;
+  private mathConfig: MathConfig;
+  private rng: () => number;
 
-  constructor(config: GameConfig, symbolSource: SymbolSource) {
+  constructor(
+    config: GameConfig,
+    mathConfig: MathConfig = defaultMathConfig,
+    symbolSource?: SymbolSource,
+    rng: () => number = Math.random
+  ) {
     this.config = config;
+    this.mathConfig = mathConfig;
     this.symbolSource = symbolSource;
+    this.rng = rng;
   }
 
   public async getSpin(state: GameState): Promise<RgsSpinResult> {
     const board = new Board(state.tiles);
     const originalColours = new Map<string, Colour>();
     board.getTiles().forEach((t) => originalColours.set(t.id, t.colour));
-    const symbols = this.symbolSource.generateSymbols(ROWS, COLS);
+    const tileOrder = board.getTiles().map((t) => t.id);
+    const mathSpin = this.symbolSource
+      ? null
+      : resolveMathSpin(
+          board.getTiles().map((t) => t.colour),
+          state.bet,
+          this.mathConfig,
+          this.rng
+        );
+    const symbols = this.symbolSource?.generateSymbols(ROWS, COLS) ?? mathSpin?.symbols ?? [];
     this.applySymbolsToBoard(board, symbols);
 
     // Stage 1: payouts only for coins on matching colours, using pre-change multipliers.
@@ -39,7 +59,8 @@ export class LocalRgsClient implements RgsClient {
     const pendingFlips: { tileId: string; colour: Colour }[] = [];
 
     symbols.forEach((symbol, index) => {
-      const tile = board.getTiles()[index];
+      const tileId = tileOrder[index];
+      const tile = board.getTile(tileId);
       if (!tile || symbol.type !== 'COIN') return;
       const startingColour = originalColours.get(tile.id) ?? tile.colour;
       const onOwn = startingColour === symbol.colour;
@@ -49,13 +70,17 @@ export class LocalRgsClient implements RgsClient {
         totalWin += win;
         roundWin = totalWin;
         lastSpinPayouts.push({ tileId: tile.id, amount: win });
-      } else {
+      } else if (!mathSpin) {
         pendingFlips.push({ tileId: tile.id, colour: symbol.colour });
       }
     });
 
     // Stage 2: apply flips, soldiers, tanks, then update multipliers.
-    pendingFlips.forEach(({ tileId, colour }) => board.setTileColour(tileId, colour));
+    if (mathSpin) {
+      tileOrder.forEach((tileId, idx) => board.setTileColour(tileId, mathSpin.updatedColours[idx]));
+    } else {
+      pendingFlips.forEach(({ tileId, colour }) => board.setTileColour(tileId, colour));
+    }
     this.applySoldiers(board);
     this.applyTanks(board, symbols);
 

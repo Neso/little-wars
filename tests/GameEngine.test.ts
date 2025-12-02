@@ -4,6 +4,7 @@ import { GameEngine } from '../src/core/GameEngine';
 import { FixedSymbolSource } from '../src/core/SymbolSource';
 import { LocalRgsClient } from '../src/net/LocalRgsClient';
 import { Symbol } from '../src/core/types';
+import { defaultMathConfig } from '../src/config/mathConfig';
 
 const emptySymbols = (count: number): Symbol[] => Array.from({ length: count }, () => ({ type: 'EMPTY' }));
 
@@ -18,7 +19,7 @@ describe('GameEngine', () => {
         ORANGE: { onOwn: [{ value: 2, weight: 1 }], onOpposite: [{ value: 2, weight: 1 }] }
       }
     };
-    const rgs = new LocalRgsClient(configOverride, new FixedSymbolSource(symbols));
+    const rgs = new LocalRgsClient(configOverride, defaultMathConfig, new FixedSymbolSource(symbols));
     const engine = new GameEngine(configOverride, rgs);
 
     const state = await engine.spin();
@@ -36,7 +37,7 @@ describe('GameEngine', () => {
     symbols[0] = { type: 'COIN', colour: 'ORANGE', value: 1 };
     symbols[1] = { type: 'COIN', colour: 'ORANGE', value: 1 };
     symbols[2] = { type: 'COIN', colour: 'ORANGE', value: 1 };
-    const rgs = new LocalRgsClient(config, new FixedSymbolSource(symbols));
+    const rgs = new LocalRgsClient(config, defaultMathConfig, new FixedSymbolSource(symbols));
     const engine = new GameEngine(config, rgs);
 
     const state = await engine.spin();
@@ -54,7 +55,7 @@ describe('GameEngine', () => {
     };
     const symbols: Symbol[] = emptySymbols(30);
     symbols[5] = { type: 'SOLDIER', colour: 'GREEN' };
-    const rgs = new LocalRgsClient(singleSpinConfig, new FixedSymbolSource(symbols));
+    const rgs = new LocalRgsClient(singleSpinConfig, defaultMathConfig, new FixedSymbolSource(symbols));
     const engine = new GameEngine(singleSpinConfig, rgs);
 
     const state = await engine.spin();
@@ -66,7 +67,7 @@ describe('GameEngine', () => {
   it('soldier flips opposite tile when landing on opposite colour', async () => {
     const symbols: Symbol[] = emptySymbols(30);
     symbols[0] = { type: 'SOLDIER', colour: 'GREEN' };
-    const rgs = new LocalRgsClient(config, new FixedSymbolSource(symbols));
+    const rgs = new LocalRgsClient(config, defaultMathConfig, new FixedSymbolSource(symbols));
     const engine = new GameEngine(config, rgs);
     // Force tile 0 to be ORANGE to test flip
     // @ts-expect-error private access for test
@@ -80,7 +81,7 @@ describe('GameEngine', () => {
   it('soldier on own colour attacks adjacent tile (non-diagonal)', async () => {
     const symbols: Symbol[] = emptySymbols(30);
     symbols[0] = { type: 'SOLDIER', colour: 'GREEN' };
-    const rgs = new LocalRgsClient(config, new FixedSymbolSource(symbols));
+    const rgs = new LocalRgsClient(config, defaultMathConfig, new FixedSymbolSource(symbols));
     const engine = new GameEngine(config, rgs);
     // Arrange adjacent tile (0,1) as ORANGE to be targeted
     // @ts-expect-error private access for test

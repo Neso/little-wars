@@ -1,7 +1,7 @@
 import { Application } from 'pixi.js';
 import { GameConfigLoader } from '@config/GameConfigLoader';
 import { GameEngine } from '@core/GameEngine';
-import { WeightedSymbolSource } from '@core/SymbolSource';
+import { defaultMathConfig } from '@config/mathConfig';
 import { LocalRgsClient } from '@net/LocalRgsClient';
 import { MainUI } from '@ui/MainUI';
 import { Hud } from '@ui/Hud';
@@ -24,10 +24,7 @@ const app = new Application({
 });
 
 const config = GameConfigLoader.load();
-const rgs = new LocalRgsClient(
-  config,
-  new WeightedSymbolSource(config.symbolDistribution, config.coinValueDistribution, config.tankReelWeights)
-);
+const rgs = new LocalRgsClient(config, defaultMathConfig);
 const engine = new GameEngine(config, rgs);
 let ui: MainUI;
 const hud = new Hud(

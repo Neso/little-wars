@@ -4,6 +4,7 @@ import { FixedSymbolSource } from '../src/core/SymbolSource';
 import { GameEngine } from '../src/core/GameEngine';
 import config from '../src/config/config.json';
 import { Symbol } from '../src/core/types';
+import { defaultMathConfig } from '../src/config/mathConfig';
 
 const emptySymbols = (count: number): Symbol[] =>
   Array.from({ length: count }, () => ({ type: 'EMPTY' }));
@@ -43,7 +44,7 @@ describe('LocalRgsClient', () => {
         ORANGE: { onOwn: [{ value: 2, weight: 1 }], onOpposite: [{ value: 2, weight: 1 }] }
       }
     };
-    const rgs = new LocalRgsClient(cfg, new FixedSymbolSource(symbols));
+    const rgs = new LocalRgsClient(cfg, defaultMathConfig, new FixedSymbolSource(symbols));
     const baseState = makeBaseState();
 
     const result = await rgs.getSpin(baseState);
@@ -61,7 +62,7 @@ describe('LocalRgsClient', () => {
   it('uses initial counts for payouts but applies flips after coins', async () => {
     const symbols: Symbol[] = emptySymbols(30);
     symbols[0] = { type: 'COIN', colour: 'ORANGE', value: 1 };
-    const rgs = new LocalRgsClient(config, new FixedSymbolSource(symbols));
+    const rgs = new LocalRgsClient(config, defaultMathConfig, new FixedSymbolSource(symbols));
     const baseState = makeBaseState();
 
     const result = await rgs.getSpin(baseState);
