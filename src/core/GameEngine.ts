@@ -51,6 +51,7 @@ export class GameEngine {
 
     this.state.balance -= this.state.bet;
     this.state.freeSpinActive = false;
+    this.state.lastRoundWasFreeSpin = false;
     this.state.remainingSpins = 1;
     this.state.maxSpinsPerRound = 1;
     this.state.totalWin = 0;
@@ -96,6 +97,7 @@ export class GameEngine {
       lastRoundWin: undefined,
       lastSpinPayouts: [],
       freeSpinActive: false,
+      lastRoundWasFreeSpin: false,
       remainingSpins: 0,
       maxSpinsPerRound: 1,
       greenTileCount: counts.GREEN,
@@ -119,10 +121,6 @@ export class GameEngine {
     this.applyCoins(symbols);
     this.applySoldiers();
     this.applyTanks(symbols);
-    // If free spins were not triggered, round should end after this spin
-    if (!this.state.freeSpinActive) {
-      this.state.remainingSpins = 0;
-    }
   }
 
   private applyCoins(symbols: Symbol[]): void {
@@ -247,10 +245,7 @@ export class GameEngine {
 
   private finishRoundIfNeeded(): void {
     if (this.state.remainingSpins > 0) {
-      // If not in free spins, a single spin ends the round immediately
-      if (!this.state.freeSpinActive) {
-        this.state.remainingSpins = 0;
-      } else {
+      if (this.state.freeSpinActive) {
         return;
       }
     }
@@ -258,6 +253,7 @@ export class GameEngine {
     this.state.lastRoundWin = roundWin;
     this.state.balance += roundWin;
     this.state.totalWin = 0;
+    this.state.lastSpinWin = 0;
     this.state.lastRoundWasFreeSpin = this.state.freeSpinActive;
     this.state.freeSpinActive = false;
     this.state.maxSpinsPerRound = 1;
