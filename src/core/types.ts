@@ -52,6 +52,11 @@ export interface GameConfig {
   symbolDistribution: SymbolDistribution;
   coinValueDistribution: CoinValueDistribution;
   tankReelWeights: TankReelWeights;
+  freeSpinMode?: {
+    enabled: boolean;
+    triggerSymbol?: SymbolType;
+    spinsPerRound: number;
+  };
 }
 
 export interface BaseSymbol {
@@ -101,6 +106,7 @@ export interface GameState {
   lastSpinWin?: number;
   lastRoundWin?: number;
   lastSpinPayouts?: { tileId: string; amount: number }[];
+  freeSpinActive: boolean;
   remainingSpins: number;
   maxSpinsPerRound: number;
   greenTileCount: number;

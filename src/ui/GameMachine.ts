@@ -1,4 +1,5 @@
 import { Tile } from '@core/types';
+import { AnimationSettings, defaultAnimation } from '@config/animation';
 import { Application, Container, Graphics, Rectangle, Sprite, Texture, Text, TextStyle } from 'pixi.js';
 
 const textures = {
@@ -30,10 +31,12 @@ export class GameMachine {
   private viewportHeight = 280;
   private skipRequested = false;
   private lastColours: Map<string, string> = new Map();
+  private animation: AnimationSettings;
 
-  constructor(app: Application, container?: Container) {
+  constructor(app: Application, container?: Container, animation: AnimationSettings = defaultAnimation) {
     this.app = app;
     this.container = container ?? new Container();
+    this.animation = animation;
     this.tilesLayer = new Container();
     this.flickerLayer = new Container();
     this.symbolsLayer = new Container();
@@ -106,9 +109,7 @@ export class GameMachine {
     tiles: Tile[],
     payouts?: { tileId: string; amount: number }[],
     prevTiles?: Tile[],
-    multipliers?: { GREEN: number; ORANGE: number },
-    durationMs = 500,
-    columnDelayMs = 120
+    multipliers?: { GREEN: number; ORANGE: number }
   ): Promise<void> {
     const layout = this.computeLayout(tiles);
     if (prevTiles) {
@@ -122,13 +123,6 @@ export class GameMachine {
 
     const overlay = new Container();
     this.container.addChild(overlay);
-
-    const columns = new Map<number, Tile[]>();
-    tiles.forEach((tile) => {
-      const colTiles = columns.get(tile.col) ?? [];
-      colTiles.push(tile);
-      columns.set(tile.col, colTiles);
-    });
 
     let resolved = false;
     const tankTiles = tiles.filter((t) => t.symbol?.type === 'TANK');
@@ -159,41 +153,60 @@ export class GameMachine {
         return;
       }
 
+      const columns = new Map<number, Tile[]>();
+      tiles.forEach((tile) => {
+        const arr = columns.get(tile.col) ?? [];
+        arr.push(tile);
+        columns.set(tile.col, arr);
+      });
+
       columns.forEach((colTiles, colIndex) => {
-        setTimeout(() => {
-          if (this.skipRequested) {
-            markDone();
-            return;
-          }
-          colTiles.forEach((tile) => {
+        const sorted = [...colTiles].sort((a, b) => b.row - a.row); // bottom to top
+        sorted.forEach((tile, orderInColumn) => {
+          const delay =
+            colIndex * this.animation.columnDelayMs +
+            orderInColumn * this.animation.stackDelayMs;
+          setTimeout(() => {
+            if (this.skipRequested) {
+              markDone();
+              return;
+            }
             const { x, y } = this.positionFor(tile, layout);
             const container = this.createSymbolContainer(tile, layout.size, multipliers);
             container.x = x + (layout.size - container.width) / 2;
-            container.y = -layout.size * 2; // start above view
+            const startY =
+              y -
+              layout.tileSize * this.animation.startOffsetTiles -
+              (layout.size - container.height) / 2 -
+              this.animation.offscreenOffsetPx;
+            container.y = startY; // start above view
             overlay.addChild(container);
 
             const targetY = y + (layout.size - container.height) / 2;
-            const startY = container.y;
             const startTime = performance.now();
+            const duration = this.animation.fallDurationMs;
+            const power = this.animation.easingPower;
 
             const animate = (now: number) => {
               if (this.skipRequested) {
                 container.y = targetY;
+                this.shake(container);
                 markDone();
                 return;
               }
-              const t = Math.min(1, (now - startTime) / durationMs);
-              const eased = 1 - (1 - t) * (1 - t);
+              const t = Math.min(1, (now - startTime) / duration);
+              const eased = 1 - Math.pow(1 - t, power);
               container.y = startY + (targetY - startY) * eased;
               if (t < 1) {
                 requestAnimationFrame(animate);
               } else {
+                this.shake(container);
                 markDone();
               }
             };
             requestAnimationFrame(animate);
-          });
-        }, colIndex * columnDelayMs);
+          }, delay);
+        });
       });
     });
   }
@@ -350,10 +363,7 @@ export class GameMachine {
 
         for (let c = tank.col; c <= maxCol; c++) {
           setTimeout(() => {
-            const { x, y } = this.positionFor(
-              { ...tank, col: c } as Tile,
-              layout
-            );
+            const { x, y } = this.positionFor({ ...tank, col: c } as Tile, layout);
             const flash = new Graphics();
             flash.beginFill(0xffffff, 0.4);
             flash.drawRect(x, y, layout.size, layout.size);
@@ -368,13 +378,19 @@ export class GameMachine {
           maxCol * layout.tileSize +
           layout.padding +
           (layout.size - sprite.width) / 2;
-        const distance = endX - sprite.x;
+        const startX = sprite.x;
+        const distance = endX - startX;
         const duration = 500;
         const startTime = performance.now();
         const animate = (now: number) => {
+          if (this.skipRequested) {
+            sprite.x = endX;
+            resolve();
+            return;
+          }
           const t = Math.min(1, (now - startTime) / duration);
           const eased = 1 - Math.pow(1 - t, 2);
-          sprite.x = sprite.x + distance * eased;
+          sprite.x = startX + distance * eased;
           if (t < 1) {
             requestAnimationFrame(animate);
           } else {
@@ -388,5 +404,24 @@ export class GameMachine {
     return Promise.all(animations).then(() => {
       this.tankLayer.removeChildren();
     });
+  }
+
+  private shake(container: Container): void {
+    const originalY = container.y;
+    const amplitude = this.animation.tremorOffsetPx;
+    const duration = this.animation.tremorDurationMs;
+    const start = performance.now();
+
+    const animate = (now: number) => {
+      const t = Math.min(1, (now - start) / duration);
+      const damped = (1 - t) * amplitude;
+      container.y = originalY + Math.sin(t * Math.PI * 4) * damped;
+      if (t < 1 && !this.skipRequested) {
+        requestAnimationFrame(animate);
+      } else {
+        container.y = originalY;
+      }
+    };
+    requestAnimationFrame(animate);
   }
 }
