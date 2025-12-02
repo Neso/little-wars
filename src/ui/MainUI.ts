@@ -81,7 +81,7 @@ export class MainUI {
     const newState = this.engine.spin();
     this.syncUI(newState, { skipBoard: true });
     await this.gameMachine.animateSpin(newState.tiles, newState.lastSpinPayouts, prevTiles, newState.multipliers);
-    if (newState.freeSpinActive && newState.lastSpinWin && newState.lastSpinWin > 0) {
+    if (newState.lastSpinWin && newState.lastSpinWin > 0) {
       this.gameMachine.showTotalWin(newState.lastSpinWin);
     }
     this.gameMachine.setOpacity(false);
