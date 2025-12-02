@@ -7,7 +7,6 @@ export class Hud {
   private totalWinEl: HTMLElement | null;
   private spinWinEl: HTMLElement | null;
   private betEl: HTMLElement | null;
-  private spinsEl: HTMLElement | null;
   private tilesGreenEl: HTMLElement | null;
   private tilesOrangeEl: HTMLElement | null;
   private nextGreenEl: HTMLElement | null;
@@ -23,7 +22,6 @@ export class Hud {
     this.totalWinEl = document.getElementById('hud-totalwin');
     this.spinWinEl = document.getElementById('hud-spinwin');
     this.betEl = document.getElementById('hud-bet');
-    this.spinsEl = document.getElementById('hud-spins');
     this.tilesGreenEl = document.getElementById('hud-tiles-green');
     this.tilesOrangeEl = document.getElementById('hud-tiles-orange');
     this.nextGreenEl = document.getElementById('hud-next-green');
@@ -46,8 +44,6 @@ export class Hud {
     this.totalWinEl && (this.totalWinEl.textContent = state.totalWin.toString());
     this.spinWinEl && (this.spinWinEl.textContent = state.lastSpinWin?.toString() ?? '0');
     this.betEl && (this.betEl.textContent = state.bet.toString());
-    this.spinsEl &&
-      (this.spinsEl.textContent = `${state.remainingSpins}/${state.maxSpinsPerRound}`);
     this.tilesGreenEl && (this.tilesGreenEl.textContent = `${state.greenTileCount}`);
     this.tilesOrangeEl && (this.tilesOrangeEl.textContent = `${state.orangeTileCount}`);
     const nextGreen = this.nextThreshold('GREEN', state.greenTileCount);

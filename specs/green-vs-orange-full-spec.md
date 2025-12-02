@@ -6,8 +6,9 @@ This document defines the **game design** and **technical spec (TypeScript)** fo
 
 ### Key ideas
 
-- Player starts with a **balance** and places a **bet**.
-- A round costs one bet and grants **N spins** (default: 3).
+ - Player starts with a **balance** and places a **bet**.
+ - Base behaviour: each spin is a standalone “bind” that costs one bet and ends immediately (no free spins by default).
+ - A configurable **free-spin mode** can be entered by a trigger symbol; in that mode, a round grants **N spins** (default: 3).
 - The grid starts with **15 green tiles and 15 orange tiles**.
 - On each spin, symbols **tumble down** into tiles.
 - **Coins** pay based on tile colour, symbol colour, symbol value, and multiplier.
@@ -84,8 +85,8 @@ UI shows:
 ### 2.4 Spin Flow (Single Spin)
 
 #### Pre-spin
-- First spin deducts bet.
-- Next spins are free within the round.
+- Every spin deducts the bet (single-spin rounds).
+- Free-spin mode (if triggered by config) enables multi-spin rounds using `spinsPerRound`.
 
 #### Tiles Dim
 - Opacity → 30%.
@@ -169,6 +170,11 @@ export interface GameConfig {
     GREEN: number[]; // per-column tank probability for GREEN tanks (length 6)
     ORANGE: number[]; // per-column tank probability for ORANGE tanks (length 6)
   };
+  freeSpinMode?: {
+    enabled: boolean;
+    triggerSymbol?: SymbolType;
+    spinsPerRound: number;
+  };
 }
 ```
 
@@ -235,6 +241,11 @@ export interface GameConfig {
   "tankReelWeights": {
     "GREEN": [0.0, 0.002, 0.003, 0.004, 0.005, 0.006],
     "ORANGE": [0.0, 0.002, 0.003, 0.004, 0.005, 0.006]
+  },
+  "freeSpinMode": {
+    "enabled": true,
+    "triggerSymbol": "TANK",
+    "spinsPerRound": 3
   },
   "multipliers": {
     "GREEN": [

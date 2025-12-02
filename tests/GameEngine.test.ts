@@ -21,9 +21,10 @@ describe('GameEngine', () => {
 
     const state = engine.spin();
 
-    expect(state.totalWin).toBe(2); // bet 1 * multiplier 1 * value 2
+    expect(state.totalWin).toBe(0); // round ended, winnings banked
+    expect(state.lastRoundWin).toBe(2);
     expect(state.lastSpinWin).toBe(2);
-    expect(state.balance).toBe(999); // bet deducted once
+    expect(state.balance).toBe(1001); // 1000 - 1 bet + 2 win
     expect(state.greenTileCount).toBe(15);
     expect(state.orangeTileCount).toBe(15);
   });
@@ -54,8 +55,8 @@ describe('GameEngine', () => {
 
     const state = engine.spin();
 
-    expect(state.remainingSpins).toBe(1);
-    expect(state.roundActive).toBe(true);
+    expect(state.remainingSpins).toBe(0);
+    expect(state.roundActive).toBe(false);
   });
 
   it('soldier flips opposite tile when landing on opposite colour', () => {

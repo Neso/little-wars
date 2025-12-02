@@ -8,6 +8,7 @@ export interface AnimationSettings {
   offscreenOffsetPx: number;
   tremorDurationMs: number;
   tremorOffsetPx: number;
+  totalWinDisplayMs: number;
 }
 
 export const defaultAnimation: AnimationSettings = {
@@ -19,5 +20,6 @@ export const defaultAnimation: AnimationSettings = {
   stackDelayMs: 200,
   offscreenOffsetPx: 500,
   tremorDurationMs: 50,
-  tremorOffsetPx: 2
+  tremorOffsetPx: 2,
+  totalWinDisplayMs: 1000
 };

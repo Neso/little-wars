@@ -26,6 +26,7 @@ export class GameMachine {
   private symbolsLayer: Container;
   private payoutLayer: Container;
   private tankLayer: Container;
+  private totalWinLayer: Container;
   private dimmed = false;
   private viewportWidth = 320;
   private viewportHeight = 280;
@@ -47,6 +48,8 @@ export class GameMachine {
     this.container.addChild(this.payoutLayer);
     this.tankLayer = new Container();
     this.container.addChild(this.tankLayer);
+    this.totalWinLayer = new Container();
+    this.container.addChild(this.totalWinLayer);
     this.app.stage.addChild(this.container);
   }
 
@@ -118,7 +121,7 @@ export class GameMachine {
     this.skipRequested = false;
     this.tilesLayer.removeChildren();
     this.symbolsLayer.removeChildren();
-    this.setOpacity(true);
+    this.setOpacity(false);
     this.drawTilesOnly(prevTiles ?? tiles, layout);
 
     const overlay = new Container();
@@ -132,7 +135,6 @@ export class GameMachine {
       resolved = true;
       await this.playTankOverlay(tankTiles, tiles, layout);
       this.container.removeChild(overlay);
-      this.setOpacity(false);
       this.update(tiles, payouts, multipliers);
     };
 
@@ -306,6 +308,18 @@ export class GameMachine {
       };
       requestAnimationFrame(animate);
     });
+  }
+
+  public showTotalWin(amount: number): void {
+    this.totalWinLayer.removeChildren();
+    const txt = new Text(`Win: ${amount}`, new TextStyle({ fill: '#fff', fontSize: 32, fontWeight: '900', stroke: '#000', strokeThickness: 4 }));
+    txt.x = this.viewportWidth / 2 - txt.width / 2;
+    txt.y = this.viewportHeight / 2 - txt.height / 2;
+    txt.zIndex = 9999;
+    this.totalWinLayer.addChild(txt);
+    setTimeout(() => {
+      this.totalWinLayer.removeChildren();
+    }, this.animation.totalWinDisplayMs);
   }
 
   private flashChangedTiles(changed: Tile[], layout: { offsetX: number; offsetY: number; tileSize: number; padding: number; size: number }): void {

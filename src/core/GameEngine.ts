@@ -47,8 +47,9 @@ export class GameEngine {
     }
 
     this.state.balance -= this.state.bet;
-    this.state.remainingSpins = this.config.spinsPerRound;
-    this.state.maxSpinsPerRound = this.config.spinsPerRound;
+    this.state.freeSpinActive = false;
+    this.state.remainingSpins = 1;
+    this.state.maxSpinsPerRound = 1;
     this.state.totalWin = 0;
     this.state.lastSpinWin = 0;
     this.state.lastRoundWin = undefined;
@@ -88,8 +89,12 @@ export class GameEngine {
       balance: this.config.startingBalance,
       bet: this.config.bet.defaultBet,
       totalWin: 0,
+      lastSpinWin: 0,
+      lastRoundWin: undefined,
+      lastSpinPayouts: [],
+      freeSpinActive: false,
       remainingSpins: 0,
-      maxSpinsPerRound: this.config.spinsPerRound,
+      maxSpinsPerRound: 1,
       greenTileCount: counts.GREEN,
       orangeTileCount: counts.ORANGE,
       multipliers: this.calculateMultipliers(counts),
@@ -191,6 +196,22 @@ export class GameEngine {
   }
 
   private applySpinResetRules(symbols: Symbol[]): void {
+    const freeSpinConfig = this.config.freeSpinMode;
+    if (freeSpinConfig?.enabled && freeSpinConfig.triggerSymbol) {
+      const triggerCount = countSymbolType(symbols, freeSpinConfig.triggerSymbol as SymbolType);
+      if (triggerCount > 0) {
+        this.state.freeSpinActive = true;
+        this.state.maxSpinsPerRound = freeSpinConfig.spinsPerRound;
+        this.state.remainingSpins = freeSpinConfig.spinsPerRound;
+      }
+    }
+
+    if (!this.state.freeSpinActive) {
+      // No free spins; round completes immediately
+      this.state.remainingSpins = 0;
+      return;
+    }
+
     let updatedSpins = this.state.remainingSpins;
     this.config.spinResetRules.forEach((rule) => {
       const count = countSymbolType(symbols, rule.symbolType as SymbolType);
@@ -219,11 +240,18 @@ export class GameEngine {
 
   private finishRoundIfNeeded(): void {
     if (this.state.remainingSpins > 0) {
-      return;
+      // If not in free spins, a single spin ends the round immediately
+      if (!this.state.freeSpinActive) {
+        this.state.remainingSpins = 0;
+      } else {
+        return;
+      }
     }
     this.state.lastRoundWin = this.state.totalWin;
     this.state.balance += this.state.totalWin;
     this.state.totalWin = 0;
+    this.state.freeSpinActive = false;
+    this.state.maxSpinsPerRound = 1;
     this.state.roundActive = false;
   }
 }

@@ -4,7 +4,8 @@
     "min": 1,
     "max": 100,
     "step": 1,
-    "defaultBet": 1
+    "defaultBet": 1,
+    "levels": [1, 2, 5, 10, 20, 50, 100]
   },
   "spinsPerRound": 3,
   "spinResetRules": [
@@ -59,6 +60,11 @@
   "tankReelWeights": {
     "GREEN": [0.005, 0.01, 0.01, 0.004, 0.005, 0.006],
     "ORANGE": [0.005, 0.006, 0.003, 0.004, 0.005, 0.006]
+  },
+  "freeSpinMode": {
+    "enabled": true,
+    "triggerSymbol": "TANK",
+    "spinsPerRound": 3
   },
   "multipliers": {
     "GREEN": [
