@@ -9,7 +9,8 @@ export default defineConfig({
       '@ui': path.resolve(__dirname, 'src/ui'),
       '@config': path.resolve(__dirname, 'src/config'),
       '@render': path.resolve(__dirname, 'src/render'),
-      '@audio': path.resolve(__dirname, 'src/audio')
+      '@audio': path.resolve(__dirname, 'src/audio'),
+      '@net': path.resolve(__dirname, 'src/net')
     }
   },
   test: {

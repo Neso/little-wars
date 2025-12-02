@@ -21,7 +21,8 @@
       "@ui/*": ["ui/*"],
       "@config/*": ["config/*"],
       "@render/*": ["render/*"],
-      "@audio/*": ["audio/*"]
+      "@audio/*": ["audio/*"],
+      "@net/*": ["net/*"]
     }
   },
   "include": ["src", "tests"]

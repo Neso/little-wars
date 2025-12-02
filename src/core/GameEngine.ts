@@ -1,7 +1,6 @@
 import { Board } from './Board';
-import { SymbolSource, countSymbolType } from './SymbolSource';
+import { RgsClient } from '@net/RgsClient';
 import {
-  CoinSymbol,
   GameConfig,
   GameState,
   Multipliers,
@@ -16,12 +15,12 @@ const TILE_COUNT = ROWS * COLS;
 export class GameEngine {
   private board: Board;
   private config: GameConfig;
-  private symbolSource: SymbolSource;
+  private rgsClient: RgsClient;
   private state: GameState;
 
-  constructor(config: GameConfig, symbolSource: SymbolSource) {
+  constructor(config: GameConfig, rgsClient: RgsClient) {
     this.config = config;
-    this.symbolSource = symbolSource;
+    this.rgsClient = rgsClient;
     this.board = new Board();
     this.state = this.initState();
   }
@@ -64,7 +63,7 @@ export class GameEngine {
     return this.getState();
   }
 
-  public spin(): GameState {
+  public async spin(): Promise<GameState> {
     if (!this.state.roundActive) {
       this.startNewRound();
     }
@@ -77,12 +76,8 @@ export class GameEngine {
     this.state.roundWin = 0;
     this.state.lastSpinPayouts = [];
 
-    const symbols = this.symbolSource.generateSymbols(ROWS, COLS);
-    this.applySymbolsToBoard(symbols);
-    this.resolveSymbols(symbols);
-    this.applySpinResetRules(symbols);
-    this.updateTileCountsAndMultipliers();
-    this.finishRoundIfNeeded();
+    const result = await this.playWithRgs();
+    this.applyRgsResult(result);
     return this.getState();
   }
 
@@ -107,79 +102,6 @@ export class GameEngine {
     };
   }
 
-  private applySymbolsToBoard(symbols: Symbol[]): void {
-    if (symbols.length !== TILE_COUNT) {
-      throw new Error('Symbol count must match tile count.');
-    }
-    const tiles = this.board.getTiles();
-    for (let i = 0; i < TILE_COUNT; i++) {
-      this.board.setTileSymbol(tiles[i].id, symbols[i]);
-    }
-  }
-
-  private resolveSymbols(symbols: Symbol[]): void {
-    this.applyCoins(symbols);
-    this.applySoldiers();
-    this.applyTanks(symbols);
-  }
-
-  private applyCoins(symbols: Symbol[]): void {
-    const tiles = this.board.getTiles();
-    symbols.forEach((symbol, index) => {
-      if (symbol.type !== 'COIN') {
-        return;
-      }
-      const tile = tiles[index];
-      if (!tile) {
-        return;
-      }
-      const onOwnColour = tile.colour === symbol.colour;
-      const coinValue = symbol.value ?? this.pickCoinValue(symbol.colour, onOwnColour);
-      // Persist the effective coin value on the board symbol so UI can display it.
-      this.board.setTileSymbol(tile.id, { ...symbol, value: coinValue });
-      if (tile.colour === symbol.colour) {
-        const multiplier = this.state.multipliers[symbol.colour];
-        const win = this.state.bet * multiplier * coinValue;
-        this.state.totalWin += win;
-        this.state.roundWin = this.state.totalWin;
-        this.state.lastSpinPayouts?.push({ tileId: tile.id, amount: win });
-      } else {
-        this.board.setTileColour(tile.id, symbol.colour);
-      }
-    });
-  }
-
-  private applySoldiers(): void {
-    const tiles = this.board.getTiles();
-    tiles.forEach((tile) => {
-      const symbol = tile.symbol;
-      if (!symbol || symbol.type !== 'SOLDIER') return;
-      const adjacents = this.board.getAdjacent(tile.id);
-      if (tile.colour === symbol.colour) {
-        const target =
-          adjacents.find((t) => t.colour !== symbol.colour) || adjacents.find(() => true);
-        if (target) {
-          this.board.setTileColour(target.id, symbol.colour);
-        }
-      } else {
-        this.board.setTileColour(tile.id, symbol.colour);
-      }
-    });
-  }
-
-  private applyTanks(symbols: Symbol[]): void {
-    const tiles = this.board.getTiles();
-    symbols.forEach((symbol, index) => {
-      if (symbol.type !== 'TANK') return;
-      const tile = tiles[index];
-      if (!tile) return;
-      const targetRow = tile.row;
-      tiles
-        .filter((t) => t.row === targetRow && t.col >= tile.col)
-        .forEach((t) => this.board.setTileColour(t.id, symbol.colour));
-    });
-  }
-
   private updateTileCountsAndMultipliers(): void {
     const counts = this.board.countColours();
     this.state.greenTileCount = counts.GREEN;
@@ -200,47 +122,25 @@ export class GameEngine {
     return result;
   }
 
-  private applySpinResetRules(symbols: Symbol[]): void {
-    const freeSpinConfig = this.config.freeSpinMode;
-    if (freeSpinConfig?.enabled && freeSpinConfig.triggerSymbol) {
-      const triggerCount = countSymbolType(symbols, freeSpinConfig.triggerSymbol as SymbolType);
-      if (triggerCount > 0) {
-        this.state.freeSpinActive = true;
-        this.state.lastRoundWasFreeSpin = true;
-        this.state.maxSpinsPerRound = freeSpinConfig.spinsPerRound;
-        this.state.remainingSpins = freeSpinConfig.spinsPerRound;
-      }
-    }
-
-    if (!this.state.freeSpinActive) {
-      // No free spins; round completes immediately
-      return;
-    }
-
-    let updatedSpins = this.state.remainingSpins;
-    this.config.spinResetRules.forEach((rule) => {
-      const count = countSymbolType(symbols, rule.symbolType as SymbolType);
-      if (count >= rule.minCount) {
-        const target = Math.min(rule.resetToSpins, this.state.maxSpinsPerRound);
-        updatedSpins = Math.max(updatedSpins, target);
-      }
-    });
-    this.state.remainingSpins = updatedSpins;
+  private async playWithRgs() {
+    const result = await this.rgsClient.getSpin(this.getState());
+    return result;
   }
 
-  private pickCoinValue(colour: 'GREEN' | 'ORANGE', onOwn: boolean): number {
-    const dist = onOwn
-      ? this.config.coinValueDistribution[colour].onOwn
-      : this.config.coinValueDistribution[colour].onOpposite;
-    const total = dist.reduce((sum, c) => sum + c.weight, 0);
-    let roll = Math.random() * total;
-    for (const entry of dist) {
-      if (roll < entry.weight) {
-        return entry.value;
-      }
-      roll -= entry.weight;
-    }
-    return dist[dist.length - 1].value;
+  private applyRgsResult(result: Awaited<ReturnType<typeof this.playWithRgs>>) {
+    this.state.tiles = result.tiles;
+    this.board = new Board(result.tiles);
+    this.state.balance = result.balance;
+    this.state.totalWin = result.totalWin;
+    this.state.roundWin = result.roundWin;
+    this.state.lastRoundWin = result.lastRoundWin;
+    this.state.freeSpinActive = result.freeSpinActive;
+    this.state.lastRoundWasFreeSpin = result.lastRoundWasFreeSpin;
+    this.state.remainingSpins = result.remainingSpins;
+    this.state.maxSpinsPerRound = result.maxSpinsPerRound;
+    this.state.lastSpinPayouts = result.lastSpinPayouts;
+    this.updateTileCountsAndMultipliers();
+    this.state.roundActive = this.state.remainingSpins > 0;
   }
 
   private finishRoundIfNeeded(): void {

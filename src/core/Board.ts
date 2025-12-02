@@ -6,8 +6,8 @@ const COLS = 6;
 export class Board {
   private tiles: Tile[];
 
-  constructor() {
-    this.tiles = this.createInitialTiles();
+  constructor(tiles?: Tile[]) {
+    this.tiles = tiles ? tiles.map((t) => ({ ...t, symbol: t.symbol ? { ...t.symbol } : null })) : this.createInitialTiles();
   }
 
   public getTiles(): Tile[] {

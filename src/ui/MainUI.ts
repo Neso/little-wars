@@ -90,7 +90,7 @@ export class MainUI {
     this.animating = true;
     this.gameMachine.setOpacity(true);
     const prevTiles = this.engine.getState().tiles;
-    const newState = this.engine.spin();
+    const newState = await this.engine.spin();
     this.logger.log(`Round start - bet ${newState.bet}`);
     this.syncUI(newState, { skipBoard: true });
     await this.gameMachine.animateSpin(newState.tiles, newState.lastSpinPayouts, prevTiles, newState.multipliers);

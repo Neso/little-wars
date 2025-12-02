@@ -115,3 +115,16 @@ export interface GameState {
   multipliers: Multipliers;
   roundActive: boolean;
 }
+
+export interface RgsSpinResult {
+  tiles: Tile[];
+  balance: number;
+  totalWin: number;
+  roundWin: number;
+  lastRoundWin?: number;
+  freeSpinActive: boolean;
+  lastRoundWasFreeSpin?: boolean;
+  remainingSpins: number;
+  maxSpinsPerRound: number;
+  lastSpinPayouts?: { tileId: string; amount: number }[];
+}
