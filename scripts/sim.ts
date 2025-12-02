@@ -50,12 +50,17 @@ const run = (): void => {
   let coins = 0;
   let matches = 0;
   let opposites = 0;
+  let spinsWithPayout = 0;
+  let maxCoinsInSpin = 0;
 
   for (let i = 0; i < spins; i++) {
     const before = [...board];
     const result = resolveMathSpin(board, bet, cfg, rng);
     board = result.updatedColours;
     totalWin += result.totalCoinWin;
+    const coinsThisSpin = result.symbols.filter((s) => s.type === 'COIN').length;
+    maxCoinsInSpin = Math.max(maxCoinsInSpin, coinsThisSpin);
+    if (result.totalCoinWin > 0) spinsWithPayout += 1;
     result.symbols.forEach((s, idx) => {
       if (s.type !== 'COIN') return;
       coins += 1;
@@ -68,6 +73,9 @@ const run = (): void => {
   const oranges = board.length - greens;
   const totalBet = spins * bet;
   const rtp = totalWin / totalBet;
+  const averagePayout =
+    spinsWithPayout > 0 ? totalWin / spinsWithPayout : 0;
+  const avgCoinsPerSpin = coins / spins;
   const report = {
     spins,
     bet,
@@ -76,8 +84,13 @@ const run = (): void => {
     totalWin,
     rtp,
     coins,
+    avgCoinsPerSpin,
+    maxCoinsInSpin,
     matchRate: coins ? matches / coins : 0,
     oppositeRate: coins ? opposites / coins : 0,
+    payoutSpins: spinsWithPayout,
+    payoutHitRate: spinsWithPayout / spins,
+    averagePayout,
     finalTiles: { GREEN: greens, ORANGE: oranges }
   };
 
@@ -87,7 +100,14 @@ const run = (): void => {
     console.log('--- Little Wars Monte Carlo ---');
     console.log(`spins: ${spins}, bet: ${bet}, seed: ${seed}`);
     console.log(`totalBet: ${totalBet.toFixed(2)}, totalWin: ${totalWin.toFixed(2)}, RTP: ${(rtp * 100).toFixed(2)}%`);
-    console.log(`coins: ${coins}, matchRate: ${(report.matchRate * 100).toFixed(2)}%, oppositeRate: ${(report.oppositeRate * 100).toFixed(2)}%`);
+    console.log(
+      `coins: ${coins} (avg ${avgCoinsPerSpin.toFixed(2)}/spin, max ${maxCoinsInSpin}), ` +
+        `matchRate: ${(report.matchRate * 100).toFixed(2)}%, oppositeRate: ${(report.oppositeRate * 100).toFixed(2)}%`
+    );
+    console.log(
+      `payout spins: ${spinsWithPayout} (${(report.payoutHitRate * 100).toFixed(2)}%), ` +
+        `avg payout (on hit): ${averagePayout.toFixed(2)}`
+    );
     console.log(`final tiles -> GREEN: ${greens}, ORANGE: ${oranges}`);
   }
 };
