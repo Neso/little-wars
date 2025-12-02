@@ -216,6 +216,21 @@
         background: #33d27c;
       }
 
+      button.autoplay {
+        padding: 10px 16px;
+        background: #2b3d52;
+        color: #e8f1f2;
+        border: none;
+        border-radius: 6px;
+        font-weight: 700;
+        cursor: pointer;
+      }
+
+      button.autoplay.active {
+        background: #ff9c4a;
+        color: #0f1722;
+      }
+
       #canvas-container {
         flex: 1;
         background: #0f1722;
@@ -318,6 +333,7 @@
               </div>
             </div>
             <div class="controls">
+              <button class="autoplay" id="hud-autoplay">Autoplay</button>
               <button class="spin" id="hud-spin">Spin</button>
             </div>
           </div>

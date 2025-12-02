@@ -23,6 +23,8 @@ export class MainUI {
   private modal?: RoundModal;
   private logger: Logger;
   private animating = false;
+  private autoplay = false;
+  private autoPlayDelayMs: number;
 
   constructor(engine: GameEngine, app: Application, hud?: Hud, modal?: RoundModal) {
     this.engine = engine;
@@ -37,6 +39,7 @@ export class MainUI {
     this.hud = hud;
     this.modal = modal;
     this.logger = new Logger();
+    this.autoPlayDelayMs = engine['config']?.autoPlayDelayMs ?? 250;
     const initial = this.engine.getState();
     this.syncUI(initial);
     this.updateTopBar(initial);
@@ -50,6 +53,14 @@ export class MainUI {
 
   public spin(): void {
     this.handleSpin();
+  }
+
+  public toggleAutoplay(): void {
+    this.autoplay = !this.autoplay;
+    this.hud?.setAutoplayState(this.autoplay);
+    if (this.autoplay && !this.animating) {
+      void this.handleSpin();
+    }
   }
 
   public skipAnimation(): void {
@@ -132,6 +143,13 @@ export class MainUI {
     }
     this.gameMachine.setOpacity(false);
     this.animating = false;
+    if (this.autoplay) {
+      setTimeout(() => {
+        if (this.autoplay) {
+          void this.handleSpin();
+        }
+      }, this.autoPlayDelayMs);
+    }
   }
 
   private syncUI(state: GameState, opts?: { skipBoard?: boolean }): void {
@@ -146,6 +164,7 @@ export class MainUI {
       this.gameMachine.update(state.tiles, state.lastSpinPayouts, state.multipliers);
     }
     this.hud?.update(state);
+    this.hud?.setAutoplayState(this.autoplay);
     if (!state.roundActive && state.lastRoundWin !== undefined && state.lastRoundWasFreeSpin) {
       this.modal?.show(state.lastRoundWin);
     } else {

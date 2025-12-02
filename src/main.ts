@@ -31,7 +31,8 @@ const hud = new Hud(
   config,
   () => ui.spin(),
   () => ui.betUp(),
-  () => ui.betDown()
+  () => ui.betDown(),
+  () => ui.toggleAutoplay()
 );
 const modal = new RoundModal();
 ui = new MainUI(engine, app, hud, modal);

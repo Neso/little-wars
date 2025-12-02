@@ -57,6 +57,7 @@ export interface GameConfig {
     triggerSymbol?: SymbolType;
     spinsPerRound: number;
   };
+  autoPlayDelayMs?: number;
 }
 
 export interface BaseSymbol {

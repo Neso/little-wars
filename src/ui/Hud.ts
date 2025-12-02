@@ -8,30 +8,43 @@ export class Hud {
   private spinWinEl: HTMLElement | null;
   private betEl: HTMLElement | null;
   private spinButton: HTMLButtonElement | null;
+  private autoplayButton: HTMLButtonElement | null;
   private betUpBtn: HTMLButtonElement | null;
   private betDownBtn: HTMLButtonElement | null;
   private onSpin?: () => void;
+  private onAutoplayToggle?: () => void;
   private onBetUp?: () => void;
   private onBetDown?: () => void;
 
-  constructor(config: GameConfig, onSpin?: () => void, onBetUp?: () => void, onBetDown?: () => void) {
+  constructor(
+    config: GameConfig,
+    onSpin?: () => void,
+    onBetUp?: () => void,
+    onBetDown?: () => void,
+    onAutoplayToggle?: () => void
+  ) {
     this.config = config;
     this.balanceEl = document.getElementById('hud-balance');
     this.totalWinEl = document.getElementById('hud-totalwin');
     this.spinWinEl = document.getElementById('hud-spinwin');
     this.betEl = document.getElementById('hud-bet');
     this.spinButton = document.getElementById('hud-spin') as HTMLButtonElement | null;
+    this.autoplayButton = document.getElementById('hud-autoplay') as HTMLButtonElement | null;
     this.betUpBtn = document.getElementById('bet-up') as HTMLButtonElement | null;
     this.betDownBtn = document.getElementById('bet-down') as HTMLButtonElement | null;
     this.onSpin = onSpin;
     this.onBetUp = onBetUp;
     this.onBetDown = onBetDown;
+    this.onAutoplayToggle = onAutoplayToggle;
     this.bind();
   }
 
   private bind(): void {
     if (this.spinButton) {
       this.spinButton.onclick = () => this.onSpin?.();
+    }
+    if (this.autoplayButton) {
+      this.autoplayButton.onclick = () => this.onAutoplayToggle?.();
     }
     if (this.betUpBtn) {
       this.betUpBtn.onclick = () => this.onBetUp?.();
@@ -56,4 +69,9 @@ export class Hud {
         !state.bet || (this.config.bet.levels?.length ? state.bet <= Math.min(...this.config.bet.levels) : false);
   }
 
+  public setAutoplayState(active: boolean): void {
+    if (!this.autoplayButton) return;
+    this.autoplayButton.textContent = active ? 'Stop' : 'Autoplay';
+    this.autoplayButton.classList.toggle('active', active);
+  }
 }

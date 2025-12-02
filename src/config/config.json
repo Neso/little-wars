@@ -61,6 +61,7 @@
     "GREEN": [0.005, 0.01, 0.01, 0.004, 0.005, 0.006],
     "ORANGE": [0.005, 0.006, 0.003, 0.004, 0.005, 0.006]
   },
+  "autoPlayDelayMs": 250,
   "freeSpinMode": {
     "enabled": false,
     "triggerSymbol": null,
