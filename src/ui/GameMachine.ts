@@ -72,7 +72,8 @@ export class GameMachine {
   public update(
     tiles: Tile[],
     payouts?: { tileId: string; amount: number }[],
-    multipliers?: { GREEN: number; ORANGE: number }
+    multipliers?: { GREEN: number; ORANGE: number },
+    prevTiles?: Tile[]
   ): void {
     const layout = this.computeLayout(tiles);
     this.tilesLayer.removeChildren();
@@ -81,8 +82,11 @@ export class GameMachine {
     if (!tiles.length) return;
 
     const changed: Tile[] = [];
+    const prevMap = prevTiles
+      ? new Map(prevTiles.map((t) => [t.id, t.colour]))
+      : this.lastColours;
     tiles.forEach((tile) => {
-      const prev = this.lastColours.get(tile.id);
+      const prev = prevMap.get(tile.id);
       if (prev && prev !== tile.colour) {
         changed.push(tile);
       }

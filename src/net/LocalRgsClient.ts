@@ -31,7 +31,8 @@ export class LocalRgsClient implements RgsClient {
     this.applySymbolsToBoard(board, symbols);
 
     // Stage 1: payouts only for coins on matching colours, using pre-change multipliers.
-    const baseMultipliers = this.calculateMultipliers(board.countColours());
+    const baseCounts = board.countColours();
+    const baseMultipliers = this.calculateMultipliers(baseCounts);
     let totalWin = state.totalWin;
     let roundWin = state.roundWin;
     const lastSpinPayouts: { tileId: string; amount: number }[] = [];
@@ -112,6 +113,8 @@ export class LocalRgsClient implements RgsClient {
       lastRoundWin,
       freeSpinActive: freeSpinStillActive,
       lastRoundWasFreeSpin: freeSpinStillActive || lastRoundWasFreeSpin,
+      initialCounts: baseCounts,
+      initialMultipliers: baseMultipliers,
       remainingSpins,
       maxSpinsPerRound,
       lastSpinPayouts

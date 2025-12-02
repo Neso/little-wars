@@ -37,7 +37,9 @@ export class MainUI {
     this.hud = hud;
     this.modal = modal;
     this.logger = new Logger();
-    this.syncUI(this.engine.getState());
+    const initial = this.engine.getState();
+    this.syncUI(initial);
+    this.updateTopBar(initial);
   }
 
   public resize(width: number, height: number): void {
@@ -92,8 +94,13 @@ export class MainUI {
     const prevTiles = this.engine.getState().tiles;
     const newState = await this.engine.spin();
     this.logger.log(`Round start - bet ${newState.bet}`);
+    // First update without touching the board or top bar so animations reflect visual state.
     this.syncUI(newState, { skipBoard: true });
     await this.gameMachine.animateSpin(newState.tiles, newState.lastSpinPayouts, prevTiles, newState.multipliers);
+    // After animations, update everything including top bar and board.
+    this.syncUI(newState, { skipBoard: true });
+    this.updateTopBar(newState);
+    this.gameMachine.update(newState.tiles, newState.lastSpinPayouts, newState.multipliers, prevTiles);
     if (newState.lastSpinWin && newState.lastSpinWin > 0) {
       this.gameMachine.showTotalWin(newState.lastSpinWin);
     }
@@ -122,12 +129,6 @@ export class MainUI {
       remainingSpins: state.remainingSpins,
       maxSpins: state.maxSpinsPerRound
     });
-    this.topBar.update({
-      greenTiles: state.greenTileCount,
-      orangeTiles: state.orangeTileCount,
-      multipliers: state.multipliers,
-      maxTiles: state.greenTileCount + state.orangeTileCount
-    });
     if (!opts?.skipBoard) {
       this.gameMachine.update(state.tiles, state.lastSpinPayouts, state.multipliers);
     }
@@ -137,5 +138,20 @@ export class MainUI {
     } else {
       this.modal?.hide();
     }
+  }
+
+  private updateTopBar(state: GameState, useInitial = false): void {
+    const counts =
+      useInitial && state.initialCounts
+        ? state.initialCounts
+        : { GREEN: state.greenTileCount, ORANGE: state.orangeTileCount };
+    const multipliers =
+      useInitial && state.initialMultipliers ? state.initialMultipliers : state.multipliers;
+    this.topBar.update({
+      greenTiles: counts.GREEN,
+      orangeTiles: counts.ORANGE,
+      multipliers,
+      maxTiles: counts.GREEN + counts.ORANGE
+    });
   }
 }

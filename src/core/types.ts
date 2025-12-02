@@ -108,6 +108,8 @@ export interface GameState {
   lastSpinPayouts?: { tileId: string; amount: number }[];
   freeSpinActive: boolean;
   lastRoundWasFreeSpin?: boolean;
+  initialCounts?: { GREEN: number; ORANGE: number };
+  initialMultipliers?: Multipliers;
   remainingSpins: number;
   maxSpinsPerRound: number;
   greenTileCount: number;
@@ -124,6 +126,8 @@ export interface RgsSpinResult {
   lastRoundWin?: number;
   freeSpinActive: boolean;
   lastRoundWasFreeSpin?: boolean;
+  initialCounts?: { GREEN: number; ORANGE: number };
+  initialMultipliers?: Multipliers;
   remainingSpins: number;
   maxSpinsPerRound: number;
   lastSpinPayouts?: { tileId: string; amount: number }[];

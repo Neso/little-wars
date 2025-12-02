@@ -136,6 +136,8 @@ export class GameEngine {
     this.state.lastRoundWin = result.lastRoundWin;
     this.state.freeSpinActive = result.freeSpinActive;
     this.state.lastRoundWasFreeSpin = result.lastRoundWasFreeSpin;
+    this.state.initialCounts = result.initialCounts;
+    this.state.initialMultipliers = result.initialMultipliers;
     this.state.remainingSpins = result.remainingSpins;
     this.state.maxSpinsPerRound = result.maxSpinsPerRound;
     this.state.lastSpinPayouts = result.lastSpinPayouts;
