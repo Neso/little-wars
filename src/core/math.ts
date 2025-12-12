@@ -1,5 +1,10 @@
 import { Colour, CoinValueDistribution, Symbol, SymbolType } from './types';
-import { MathConfig, OppositeCoinCountWeight } from '@config/mathConfig';
+import {
+  FeatureCountWeight,
+  FeatureWeight,
+  MathConfig,
+  OppositeCoinCountWeight
+} from '@config/mathConfig';
 
 const clamp = (x: number, min: number, max: number): number => Math.max(min, Math.min(max, x));
 
@@ -76,6 +81,30 @@ const sampleOppositeCoinCount = (
     t -= entry.weight;
   }
   return weights[weights.length - 1].count;
+};
+
+const sampleFeatureCount = (weights: FeatureCountWeight[], rng: () => number): number => {
+  if (!weights.length) return 0;
+  const total = weights.reduce((sum, w) => sum + w.weight, 0);
+  if (total <= 0) return 0;
+  let t = rng() * total;
+  for (const entry of weights) {
+    if (t < entry.weight) return entry.count;
+    t -= entry.weight;
+  }
+  return weights[weights.length - 1].count;
+};
+
+const sampleFeatureType = (weights: FeatureWeight[], rng: () => number): 'SOLDIER' | 'TANK' => {
+  if (!weights.length) return 'SOLDIER';
+  const total = weights.reduce((sum, w) => sum + w.weight, 0);
+  if (total <= 0) return 'SOLDIER';
+  let t = rng() * total;
+  for (const entry of weights) {
+    if (t < entry.weight) return entry.type;
+    t -= entry.weight;
+  }
+  return weights[weights.length - 1].type;
 };
 
 export const getCoinProbabilityForState = (
@@ -170,6 +199,24 @@ export const resolveMathSpin = (
     symbols[idx] = { type: 'COIN', colour: coinColour, value: coinMultiplier };
     updatedColours[idx] = coinColour;
   });
+
+  // Features (soldiers/tanks) on remaining empty tiles
+  const remainingEmpty: number[] = [];
+  for (let idx = 0; idx < totalTiles; idx++) {
+    if (!symbols[idx]) remainingEmpty.push(idx);
+  }
+  const featureCount = sampleFeatureCount(config.featureCountWeights, rng);
+  const featuresToPlace = Math.min(featureCount, remainingEmpty.length);
+  for (let i = remainingEmpty.length - 1; i > 0; i--) {
+    const j = Math.floor(rng() * (i + 1));
+    [remainingEmpty[i], remainingEmpty[j]] = [remainingEmpty[j], remainingEmpty[i]];
+  }
+  for (let i = 0; i < featuresToPlace; i++) {
+    const idx = remainingEmpty[i];
+    const type = sampleFeatureType(config.featureWeights, rng);
+    const colour: Colour = rng() < 0.5 ? 'GREEN' : 'ORANGE';
+    symbols[idx] = { type, colour } as Symbol;
+  }
 
   for (let idx = 0; idx < totalTiles; idx++) {
     if (!symbols[idx]) symbols[idx] = { type: 'EMPTY' };

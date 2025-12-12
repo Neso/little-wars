@@ -10,6 +10,16 @@ export interface OppositeCoinCountWeight {
   weight: number;
 }
 
+export interface FeatureWeight {
+  type: 'SOLDIER' | 'TANK';
+  weight: number;
+}
+
+export interface FeatureCountWeight {
+  count: number;
+  weight: number;
+}
+
 export interface MathConfig {
   baseRtp: number;
   rows: number;
@@ -19,6 +29,8 @@ export interface MathConfig {
   coinMultipliers: CoinMultiplierWeight[];
   coinValueDistribution: CoinValueDistribution;
   oppositeCoinCountWeights: OppositeCoinCountWeight[];
+  featureCountWeights: FeatureCountWeight[];
+  featureWeights: FeatureWeight[];
   colourMultipliers: Record<Colour, { tilesRequired: number; multiplier: number }[]>;
 }
 
@@ -81,6 +93,17 @@ export const defaultMathConfig: MathConfig = {
     { count: 3, weight: 15 },
     { count: 4, weight: 7 },
     { count: 5, weight: 3 }
+  ],
+  featureCountWeights: [
+    { count: 1, weight: 60 },
+    { count: 2, weight: 25 },
+    { count: 3, weight: 10 },
+    { count: 4, weight: 3 },
+    { count: 5, weight: 2 }
+  ],
+  featureWeights: [
+    { type: 'SOLDIER', weight: 80 },
+    { type: 'TANK', weight: 20 }
   ],
   colourMultipliers: {
     GREEN: [

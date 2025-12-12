@@ -36,7 +36,9 @@ describe('math spec integration', () => {
         GREEN: { onOwn: [{ value: 2, weight: 1 }], onOpposite: [{ value: 2, weight: 1 }] },
         ORANGE: { onOwn: [{ value: 2, weight: 1 }], onOpposite: [{ value: 2, weight: 1 }] }
       },
-      oppositeCoinCountWeights: [{ count: 0, weight: 1 }]
+      oppositeCoinCountWeights: [{ count: 0, weight: 1 }],
+      featureCountWeights: [],
+      featureWeights: []
     };
     const rolls = [0, 0, 0, 0]; // coin presence + coin value for each tile
     let cursor = 0;
@@ -60,7 +62,9 @@ describe('math spec integration', () => {
         GREEN: { onOwn: [{ value: 1, weight: 1 }], onOpposite: [{ value: 1, weight: 1 }] },
         ORANGE: { onOwn: [{ value: 1, weight: 1 }], onOpposite: [{ value: 1, weight: 1 }] }
       },
-      oppositeCoinCountWeights: [{ count: 1, weight: 1 }]
+      oppositeCoinCountWeights: [{ count: 1, weight: 1 }],
+      featureCountWeights: [],
+      featureWeights: []
     };
     const rolls = [0, 0, 0, 0.9, 0]; // presence rolls, count roll, shuffle (keep index 0 first), coin value
     let cursor = 0;
@@ -75,5 +79,27 @@ describe('math spec integration', () => {
     expect((s as any).colour).toBe('ORANGE');
     expect(result.updatedColours[idx]).toBe('ORANGE');
     expect(result.totalCoinWin).toBe(0);
+  });
+
+  it('places features based on configured counts and weights', () => {
+    const config = {
+      ...defaultMathConfig,
+      rows: 1,
+      cols: 2,
+      baseRtp: 0,
+      maxCoinProbability: 0,
+      oppositeCoinCountWeights: [],
+      featureCountWeights: [{ count: 2, weight: 1 }],
+      featureWeights: [{ type: 'SOLDIER', weight: 1 }]
+    };
+    const rolls = [0, 0, 0.2, 0.1, 0, 0.4, 0.8, 0.9]; // coin presence (2), feature count, shuffle, type per feature, colour per feature
+    let cursor = 0;
+    const rng = () => rolls[cursor++] ?? 0;
+    const board: ('GREEN' | 'ORANGE')[] = ['GREEN', 'ORANGE'];
+    const result = resolveMathSpin(board, 1, config, rng);
+    const featureSymbols = result.symbols.filter((s) => s.type === 'SOLDIER');
+    expect(featureSymbols).toHaveLength(2);
+    const colours = featureSymbols.map((s) => (s as any).colour).sort();
+    expect(colours).toEqual(['GREEN', 'ORANGE']);
   });
 });
