@@ -51,9 +51,9 @@ win = bet × coinMultiplier × boardColorMultiplier
 
 ## 2. RTP Model (Target 95%)
 
-Expected win per tile:
+Expected win per tile (current math path):
 ```
-E = p_coin × matchProbability × meanCoinMultiplier × colorMultiplier
+E = p_coin × meanCoinMultiplier × colorMultiplier
 ```
 
 Total expectation for board state:
@@ -61,10 +61,12 @@ Total expectation for board state:
 E_total = G × E_green + O × E_orange
 ```
 
-Enforcing RTP:
+Enforcing RTP (matching coins only; opposite coins are placed separately via fixed counts):
 ```
-p_coin = 0.95 / ( matchProbability × μ × (G*M_G + O*M_O) )
+p_coin = 0.95 / ( μ × (G*M_G + O*M_O) )
 ```
+
+_Match probability note:_ `matchProbability` remains in config for backward compatibility but is ignored in the live math. Paying coins always match their tile; opposite-colour coins are added afterwards based on the configured opposite-count distribution and do not affect RTP.
 
 ---
 
@@ -72,19 +74,15 @@ p_coin = 0.95 / ( matchProbability × μ × (G*M_G + O*M_O) )
 1. Count GREEN + ORANGE tiles  
 2. Compute board multipliers  
 3. Compute μ (weighted mean coin multiplier)  
-4. Compute p_coin  
-5. For each tile:
-   - Roll EMPTY vs COIN  
-   - If COIN:
-     - Determine if coin colour matches tile  
-     - Sample coin multiplier  
-     - Pay if matching  
-     - Flip tile if opposite  
-6. Output win + grid + updated board
+4. Compute p_coin (used only for matching/paying coins)  
+5. For each tile: roll for a paying coin; if present, it matches tile colour and pays with on-own coin distribution  
+6. Draw opposite-coin count from the fixed distribution; place that many opposite-colour coins on remaining empty tiles, sampling multipliers from the on-opposite distribution and flipping those tiles  
+7. Output win + grid + updated board
 
 ---
 
 ## 4. TypeScript Code (math.ts)
+_Note: The code below reflects the original model with `matchProbability`; the live math path now forces matching coins and injects opposite-colour coins via a fixed count distribution. Refer to `specs/Coinlandingonoppositetile.md` for the current flow._
 ```ts
 // math.ts
 
@@ -112,7 +110,7 @@ export interface RgsMathConfig {
     cols: number;    // 6
     coinMultipliers: CoinMultiplierConfigEntry[];
     colorMultipliers: ColorMultiplierConfig;
-    matchProbability: number; // r, default 1.0
+    matchProbability: number; // legacy; ignored in current math (paying coins always match tile)
     maxCoinProbability?: number; // safety cap, e.g. 0.9
 }
 

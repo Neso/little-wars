@@ -1,7 +1,12 @@
-import { Colour } from '@core/types';
+import { Colour, CoinValueDistribution } from '@core/types';
 
 export interface CoinMultiplierWeight {
   value: number;
+  weight: number;
+}
+
+export interface OppositeCoinCountWeight {
+  count: number;
   weight: number;
 }
 
@@ -12,6 +17,8 @@ export interface MathConfig {
   matchProbability: number;
   maxCoinProbability: number;
   coinMultipliers: CoinMultiplierWeight[];
+  coinValueDistribution: CoinValueDistribution;
+  oppositeCoinCountWeights: OppositeCoinCountWeight[];
   colourMultipliers: Record<Colour, { tilesRequired: number; multiplier: number }[]>;
 }
 
@@ -28,6 +35,52 @@ export const defaultMathConfig: MathConfig = {
     { value: 25, weight: 4 },
     { value: 50, weight: 1 },
     { value: 100, weight: 0.5 }
+  ],
+  coinValueDistribution: {
+    GREEN: {
+      onOwn: [
+        { value: 1, weight: 0.3 },
+        { value: 2, weight: 0.25 },
+        { value: 3, weight: 0.25 },
+        { value: 25, weight: 0.1 },
+        { value: 50, weight: 0.05 },
+        { value: 100, weight: 0.05 }
+      ],
+      onOpposite: [
+        { value: 1, weight: 0.1 },
+        { value: 2, weight: 0.15 },
+        { value: 3, weight: 0.25 },
+        { value: 25, weight: 0.2 },
+        { value: 50, weight: 0.2 },
+        { value: 100, weight: 0.1 }
+      ]
+    },
+    ORANGE: {
+      onOwn: [
+        { value: 1, weight: 0.3 },
+        { value: 2, weight: 0.25 },
+        { value: 3, weight: 0.25 },
+        { value: 25, weight: 0.1 },
+        { value: 50, weight: 0.05 },
+        { value: 100, weight: 0.05 }
+      ],
+      onOpposite: [
+        { value: 1, weight: 0.1 },
+        { value: 2, weight: 0.15 },
+        { value: 3, weight: 0.25 },
+        { value: 25, weight: 0.2 },
+        { value: 50, weight: 0.2 },
+        { value: 100, weight: 0.1 }
+      ]
+    }
+  },
+  oppositeCoinCountWeights: [
+    { count: 0, weight: 25 },
+    { count: 1, weight: 25 },
+    { count: 2, weight: 25 },
+    { count: 3, weight: 15 },
+    { count: 4, weight: 7 },
+    { count: 5, weight: 3 }
   ],
   colourMultipliers: {
     GREEN: [

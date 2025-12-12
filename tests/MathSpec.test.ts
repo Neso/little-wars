@@ -25,27 +25,55 @@ describe('math spec integration', () => {
     expect(p).toBeCloseTo(defaultMathConfig.maxCoinProbability);
   });
 
-  it('pays only on matching coins and flips opposite colour coins', () => {
+  it('pays only on matching coins and leaves colours unchanged for matching drops', () => {
     const config = {
       ...defaultMathConfig,
       rows: 1,
       cols: 2,
       maxCoinProbability: 1,
-      baseRtp: 100, // force pCoin to clamp to 1 for tiny board
-      coinMultipliers: [{ value: 2, weight: 1 }],
-      matchProbability: 0.5
+      baseRtp: 1000, // force pCoin to clamp to 1 for tiny board
+      coinValueDistribution: {
+        GREEN: { onOwn: [{ value: 2, weight: 1 }], onOpposite: [{ value: 2, weight: 1 }] },
+        ORANGE: { onOwn: [{ value: 2, weight: 1 }], onOpposite: [{ value: 2, weight: 1 }] }
+      },
+      oppositeCoinCountWeights: [{ count: 0, weight: 1 }]
     };
-    // coin roll 0 -> coin, match roll 0 -> match
-    // coin roll 0 -> coin, match roll 0.9 -> opposite
-    const rolls = [0, 0, 0, 0.9];
+    const rolls = [0, 0, 0, 0]; // coin presence + coin value for each tile
     let cursor = 0;
     const rng = () => rolls[cursor++] ?? 1;
     const board: ('GREEN' | 'ORANGE')[] = ['GREEN', 'ORANGE'];
     const result = resolveMathSpin(board, 1, config, rng);
     expect(result.symbols.filter((s) => s.type === 'COIN')).toHaveLength(2);
-    // First coin matches -> pays bet(1) * multiplier(2) * board multiplier(1) = 2
-    expect(result.totalCoinWin).toBe(2);
-    // Second coin flips tile colour
-    expect(result.updatedColours[1]).toBe('GREEN');
+    // Both coins match their tiles -> each pays bet(1) * multiplier(2) * board multiplier(1)
+    expect(result.totalCoinWin).toBe(4);
+    expect(result.updatedColours).toEqual(board);
+  });
+
+  it('places opposite-colour coins using configured count distribution', () => {
+    const config = {
+      ...defaultMathConfig,
+      rows: 1,
+      cols: 2,
+      baseRtp: 0,
+      maxCoinProbability: 0,
+      coinValueDistribution: {
+        GREEN: { onOwn: [{ value: 1, weight: 1 }], onOpposite: [{ value: 1, weight: 1 }] },
+        ORANGE: { onOwn: [{ value: 1, weight: 1 }], onOpposite: [{ value: 1, weight: 1 }] }
+      },
+      oppositeCoinCountWeights: [{ count: 1, weight: 1 }]
+    };
+    const rolls = [0, 0, 0, 0.9, 0]; // presence rolls, count roll, shuffle (keep index 0 first), coin value
+    let cursor = 0;
+    const rng = () => rolls[cursor++] ?? 0;
+    const board: ('GREEN' | 'ORANGE')[] = ['GREEN', 'ORANGE'];
+    const result = resolveMathSpin(board, 1, config, rng);
+    const coinIndices = result.symbols
+      .map((s, idx) => ({ s, idx }))
+      .filter(({ s }) => s.type === 'COIN');
+    expect(coinIndices).toHaveLength(1);
+    const { idx, s } = coinIndices[0];
+    expect((s as any).colour).toBe('ORANGE');
+    expect(result.updatedColours[idx]).toBe('ORANGE');
+    expect(result.totalCoinWin).toBe(0);
   });
 });
