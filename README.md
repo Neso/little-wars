@@ -16,6 +16,7 @@ Flags (all optional):
 - `--bet <number>`: bet per spin (default 1).
 - `--seed <number>`: RNG seed (default: current timestamp).
 - `--json`: emit JSON instead of a text summary.
+- `--hot` (or `--mode=hot`): run using Hot Spin math config and `hotSpinBetMultiplier` (default 10× bet).
 
 Examples:
 - `npm run sim -- --spins 50000 --bet 1`  
@@ -24,8 +25,10 @@ Examples:
   Deterministic run with JSON output.
 - `npm run sim -- --spins 10000 --bet 5`  
   Quick sanity check at higher bet.
+- `npm run sim -- --hot --spins 200000 --bet 1 --json`  
+  Hot Spin math with 10× wager; payout calc uses base bet but hot math config boosts RTP to compensate (reports base bet and wager).
 
 Notes:
-- The sim uses the current `defaultMathConfig` (including the opposite-coin count distribution).
+- The sim uses the current `defaultMathConfig` by default; Hot Spin mode uses `hotSpinMathConfig`.
 - It starts from a 50/50 board split (15 GREEN, 15 ORANGE).
 - Opposite/Match rates in the report reflect the forced opposite-coin placement model.***

@@ -9,9 +9,11 @@ export class Hud {
   private betEl: HTMLElement | null;
   private spinButton: HTMLButtonElement | null;
   private autoplayButton: HTMLButtonElement | null;
+  private hotSpinButton: HTMLButtonElement | null;
   private betUpBtn: HTMLButtonElement | null;
   private betDownBtn: HTMLButtonElement | null;
   private onSpin?: () => void;
+  private onHotSpin?: () => void;
   private onAutoplayToggle?: () => void;
   private onBetUp?: () => void;
   private onBetDown?: () => void;
@@ -21,7 +23,8 @@ export class Hud {
     onSpin?: () => void,
     onBetUp?: () => void,
     onBetDown?: () => void,
-    onAutoplayToggle?: () => void
+    onAutoplayToggle?: () => void,
+    onHotSpin?: () => void
   ) {
     this.config = config;
     this.balanceEl = document.getElementById('hud-balance');
@@ -30,18 +33,23 @@ export class Hud {
     this.betEl = document.getElementById('hud-bet');
     this.spinButton = document.getElementById('hud-spin') as HTMLButtonElement | null;
     this.autoplayButton = document.getElementById('hud-autoplay') as HTMLButtonElement | null;
+    this.hotSpinButton = document.getElementById('hud-hotspin') as HTMLButtonElement | null;
     this.betUpBtn = document.getElementById('bet-up') as HTMLButtonElement | null;
     this.betDownBtn = document.getElementById('bet-down') as HTMLButtonElement | null;
     this.onSpin = onSpin;
     this.onBetUp = onBetUp;
     this.onBetDown = onBetDown;
     this.onAutoplayToggle = onAutoplayToggle;
+    this.onHotSpin = onHotSpin;
     this.bind();
   }
 
   private bind(): void {
     if (this.spinButton) {
       this.spinButton.onclick = () => this.onSpin?.();
+    }
+    if (this.hotSpinButton) {
+      this.hotSpinButton.onclick = () => this.onHotSpin?.();
     }
     if (this.autoplayButton) {
       this.autoplayButton.onclick = () => this.onAutoplayToggle?.();
@@ -61,6 +69,12 @@ export class Hud {
     this.totalWinEl && (this.totalWinEl.textContent = displayTotal.toString());
     this.spinWinEl && (this.spinWinEl.textContent = displayRound.toString());
     this.betEl && (this.betEl.textContent = state.bet.toString());
+    if (this.hotSpinButton) {
+      const mult = this.config.hotSpinBetMultiplier ?? 10;
+      const cost = state.bet * mult;
+      this.hotSpinButton.disabled = state.balance < cost;
+      this.hotSpinButton.textContent = `Hot Spin (x${mult})`;
+    }
     if (this.betUpBtn)
       this.betUpBtn.disabled =
         !state.bet || (this.config.bet.levels?.length ? state.bet >= Math.max(...this.config.bet.levels) : false);

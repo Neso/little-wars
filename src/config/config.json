@@ -1,5 +1,6 @@
 {
   "startingBalance": 1000,
+  "hotSpinBetMultiplier": 10,
   "bet": {
     "min": 1,
     "max": 100,

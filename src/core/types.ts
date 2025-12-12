@@ -1,5 +1,6 @@
 export type Colour = 'GREEN' | 'ORANGE';
 export type SymbolType = 'EMPTY' | 'COIN' | 'SOLDIER' | 'TANK' | 'BOMB' | 'AEROPLANE';
+export type SpinAction = 'SPIN' | 'HOT_SPIN';
 
 export interface MultiplierThreshold {
   tilesRequired: number;
@@ -11,6 +12,7 @@ export interface BetConfig {
   max: number;
   step: number;
   defaultBet: number;
+  levels?: number[];
 }
 
 export interface SpinResetRule {
@@ -46,6 +48,7 @@ export interface TankReelWeights {
 export interface GameConfig {
   startingBalance: number;
   bet: BetConfig;
+  hotSpinBetMultiplier?: number;
   spinsPerRound: number;
   spinResetRules: SpinResetRule[];
   multipliers: Record<Colour, MultiplierThreshold[]>;
@@ -119,6 +122,7 @@ export interface GameState {
   tiles: Tile[];
   balance: number;
   bet: number;
+  action?: SpinAction;
   totalWin: number;
   roundWin: number;
   lastRoundWin?: number;

@@ -1,5 +1,5 @@
-import { GameState, RgsSpinResult } from '@core/types';
+import { GameState, RgsSpinResult, SpinAction } from '@core/types';
 
 export interface RgsClient {
-  getSpin(state: GameState): Promise<RgsSpinResult>;
+  getSpin(state: GameState, action?: SpinAction): Promise<RgsSpinResult>;
 }

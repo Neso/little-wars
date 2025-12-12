@@ -7,9 +7,11 @@ import {
   Multipliers,
   RgsSpinResult,
   Symbol,
-  SymbolType
+  SymbolType,
+  SpinAction
 } from '@core/types';
 import { MathConfig, defaultMathConfig } from '@config/mathConfig';
+import { hotSpinMathConfig } from '@config/hotspinMathConfig';
 import { resolveMathSpin } from '@core/math';
 import { RgsClient } from './RgsClient';
 
@@ -20,21 +22,25 @@ export class LocalRgsClient implements RgsClient {
   private config: GameConfig;
   private symbolSource?: SymbolSource;
   private mathConfig: MathConfig;
+  private hotMathConfig: MathConfig;
   private rng: () => number;
 
   constructor(
     config: GameConfig,
     mathConfig: MathConfig = defaultMathConfig,
     symbolSource?: SymbolSource,
-    rng: () => number = Math.random
+    rng: () => number = Math.random,
+    hotMathConfig: MathConfig = hotSpinMathConfig
   ) {
     this.config = config;
     this.mathConfig = mathConfig;
+    this.hotMathConfig = hotMathConfig ?? mathConfig;
     this.symbolSource = symbolSource;
     this.rng = rng;
   }
 
-  public async getSpin(state: GameState): Promise<RgsSpinResult> {
+  public async getSpin(state: GameState, action: SpinAction = 'SPIN'): Promise<RgsSpinResult> {
+    const activeMath = action === 'HOT_SPIN' ? this.hotMathConfig : this.mathConfig;
     const board = new Board(state.tiles);
     const originalColours = new Map<string, Colour>();
     board.getTiles().forEach((t) => originalColours.set(t.id, t.colour));
@@ -44,7 +50,7 @@ export class LocalRgsClient implements RgsClient {
       : resolveMathSpin(
           board.getTiles().map((t) => t.colour),
           state.bet,
-          this.mathConfig,
+          activeMath,
           this.rng
         );
     const symbols = this.symbolSource?.generateSymbols(ROWS, COLS) ?? mathSpin?.symbols ?? [];

@@ -5,7 +5,8 @@ import {
   GameState,
   Multipliers,
   Symbol,
-  SymbolType
+  SymbolType,
+  SpinAction
 } from './types';
 
 const ROWS = 5;
@@ -40,15 +41,16 @@ export class GameEngine {
     this.state.bet = nearest;
   }
 
-  public startNewRound(): GameState {
+  public startNewRound(action: SpinAction = 'SPIN', wagerOverride?: number): GameState {
     if (this.state.roundActive) {
       return this.getState();
     }
-    if (this.state.balance < this.state.bet) {
+    const wager = wagerOverride ?? this.getWagerCost(action);
+    if (this.state.balance < wager) {
       throw new Error('Insufficient balance to start round.');
     }
 
-    this.state.balance -= this.state.bet;
+    this.state.balance -= wager;
     this.state.freeSpinActive = false;
     this.state.lastRoundWasFreeSpin = false;
     this.state.remainingSpins = 1;
@@ -63,9 +65,10 @@ export class GameEngine {
     return this.getState();
   }
 
-  public async spin(): Promise<GameState> {
+  public async spin(action: SpinAction = 'SPIN'): Promise<GameState> {
     if (!this.state.roundActive) {
-      this.startNewRound();
+      const wager = this.getWagerCost(action);
+      this.startNewRound(action, wager);
     }
 
     if (this.state.remainingSpins <= 0) {
@@ -76,7 +79,7 @@ export class GameEngine {
     this.state.roundWin = 0;
     this.state.lastSpinPayouts = [];
 
-    const result = await this.playWithRgs();
+    const result = await this.playWithRgs(action);
     this.applyRgsResult(result);
     return this.getState();
   }
@@ -122,8 +125,14 @@ export class GameEngine {
     return result;
   }
 
-  private async playWithRgs() {
-    const result = await this.rgsClient.getSpin(this.getState());
+  private getWagerCost(action: SpinAction): number {
+    const mult = action === 'HOT_SPIN' ? this.config.hotSpinBetMultiplier ?? 10 : 1;
+    return this.state.bet * mult;
+  }
+
+  private async playWithRgs(action: SpinAction) {
+    const stateForSpin = { ...this.getState(), action };
+    const result = await this.rgsClient.getSpin(stateForSpin, action);
     return result;
   }
 

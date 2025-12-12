@@ -55,6 +55,10 @@ export class MainUI {
     this.handleSpin();
   }
 
+  public hotSpin(): void {
+    this.handleSpin('HOT_SPIN');
+  }
+
   public toggleAutoplay(): void {
     this.autoplay = !this.autoplay;
     this.hud?.setAutoplayState(this.autoplay);
@@ -87,12 +91,17 @@ export class MainUI {
     return this.animating;
   }
 
-  private async handleSpin(): Promise<void> {
+  private async handleSpin(action: 'SPIN' | 'HOT_SPIN' = 'SPIN'): Promise<void> {
     if (this.animating) {
       return;
     }
     const before = this.engine.getState();
-    this.logger.log(`Game start - bet ${before.bet}, balance ${before.balance - before.bet}`);
+    const effectiveBet = action === 'HOT_SPIN'
+      ? before.bet * (this.engine['config']?.hotSpinBetMultiplier ?? 10)
+      : before.bet;
+    this.logger.log(
+      `Game start (${action}) - bet ${effectiveBet}, balance ${before.balance - effectiveBet}`
+    );
     if (this.hud) {
       this.hud.update({
         ...before,
@@ -103,7 +112,7 @@ export class MainUI {
     this.animating = true;
     this.gameMachine.setOpacity(true);
     const prevTiles = this.engine.getState().tiles;
-    const newState = await this.engine.spin();
+    const newState = await this.engine.spin(action);
     this.gameMachine.onBoardSettled = () => {
       this.updateTopBar(newState);
     };

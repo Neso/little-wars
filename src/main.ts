@@ -2,6 +2,7 @@ import { Application } from 'pixi.js';
 import { GameConfigLoader } from '@config/GameConfigLoader';
 import { GameEngine } from '@core/GameEngine';
 import { defaultMathConfig } from '@config/mathConfig';
+import { hotSpinMathConfig } from '@config/hotspinMathConfig';
 import { LocalRgsClient } from '@net/LocalRgsClient';
 import { MainUI } from '@ui/MainUI';
 import { Hud } from '@ui/Hud';
@@ -24,7 +25,7 @@ const app = new Application({
 });
 
 const config = GameConfigLoader.load();
-const rgs = new LocalRgsClient(config, defaultMathConfig);
+const rgs = new LocalRgsClient(config, defaultMathConfig, undefined, undefined, hotSpinMathConfig);
 const engine = new GameEngine(config, rgs);
 let ui: MainUI;
 const hud = new Hud(
@@ -32,7 +33,8 @@ const hud = new Hud(
   () => ui.spin(),
   () => ui.betUp(),
   () => ui.betDown(),
-  () => ui.toggleAutoplay()
+  () => ui.toggleAutoplay(),
+  () => ui.hotSpin()
 );
 const modal = new RoundModal();
 ui = new MainUI(engine, app, hud, modal);
