@@ -95,7 +95,10 @@ const sampleFeatureCount = (weights: FeatureCountWeight[], rng: () => number): n
   return weights[weights.length - 1].count;
 };
 
-const sampleFeatureType = (weights: FeatureWeight[], rng: () => number): 'SOLDIER' | 'TANK' => {
+const sampleFeatureType = (
+  weights: FeatureWeight[],
+  rng: () => number
+): 'SOLDIER' | 'TANK' | 'BOMB' => {
   if (!weights.length) return 'SOLDIER';
   const total = weights.reduce((sum, w) => sum + w.weight, 0);
   if (total <= 0) return 'SOLDIER';
@@ -105,6 +108,19 @@ const sampleFeatureType = (weights: FeatureWeight[], rng: () => number): 'SOLDIE
     t -= entry.weight;
   }
   return weights[weights.length - 1].type;
+};
+
+const sampleFeatureColour = (
+  type: 'SOLDIER' | 'TANK' | 'BOMB',
+  config: MathConfig,
+  rng: () => number
+): Colour => {
+  const weights = config.featureColourWeights?.[type];
+  if (!weights) return rng() < 0.5 ? 'GREEN' : 'ORANGE';
+  const total = (weights.GREEN ?? 0) + (weights.ORANGE ?? 0);
+  if (total <= 0) return rng() < 0.5 ? 'GREEN' : 'ORANGE';
+  const roll = rng() * total;
+  return roll < (weights.GREEN ?? 0) ? 'GREEN' : 'ORANGE';
 };
 
 export const getCoinProbabilityForState = (
@@ -214,7 +230,7 @@ export const resolveMathSpin = (
   for (let i = 0; i < featuresToPlace; i++) {
     const idx = remainingEmpty[i];
     const type = sampleFeatureType(config.featureWeights, rng);
-    const colour: Colour = rng() < 0.5 ? 'GREEN' : 'ORANGE';
+    const colour: Colour = sampleFeatureColour(type, config, rng);
     symbols[idx] = { type, colour } as Symbol;
   }
 

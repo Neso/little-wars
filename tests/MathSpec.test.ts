@@ -90,7 +90,7 @@ describe('math spec integration', () => {
       maxCoinProbability: 0,
       oppositeCoinCountWeights: [],
       featureCountWeights: [{ count: 2, weight: 1 }],
-      featureWeights: [{ type: 'SOLDIER', weight: 1 }]
+      featureWeights: [{ type: 'SOLDIER' as const, weight: 1 }]
     };
     const rolls = [0, 0, 0.2, 0.1, 0, 0.4, 0.8, 0.9]; // coin presence (2), feature count, shuffle, type per feature, colour per feature
     let cursor = 0;

@@ -1,5 +1,5 @@
 export type Colour = 'GREEN' | 'ORANGE';
-export type SymbolType = 'EMPTY' | 'COIN' | 'SOLDIER' | 'TANK';
+export type SymbolType = 'EMPTY' | 'COIN' | 'SOLDIER' | 'TANK' | 'BOMB';
 
 export interface MultiplierThreshold {
   tilesRequired: number;
@@ -84,7 +84,12 @@ export interface TankSymbol extends BaseSymbol {
   colour: Colour;
 }
 
-export type Symbol = EmptySymbol | CoinSymbol | SoldierSymbol | TankSymbol;
+export interface BombSymbol extends BaseSymbol {
+  type: 'BOMB';
+  colour: Colour;
+}
+
+export type Symbol = EmptySymbol | CoinSymbol | SoldierSymbol | TankSymbol | BombSymbol;
 
 export interface Tile {
   id: string;

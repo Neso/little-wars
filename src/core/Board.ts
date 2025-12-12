@@ -56,6 +56,25 @@ export class Board {
     return adj;
   }
 
+  public getNeighbors8(tileId: string): Tile[] {
+    const tile = this.getTile(tileId);
+    if (!tile) return [];
+    const adj: Tile[] = [];
+    for (let dr = -1; dr <= 1; dr++) {
+      for (let dc = -1; dc <= 1; dc++) {
+        if (dr === 0 && dc === 0) continue;
+        const row = tile.row + dr;
+        const col = tile.col + dc;
+        if (row >= 0 && row < ROWS && col >= 0 && col < COLS) {
+          const id = `${row}-${col}`;
+          const found = this.getTile(id);
+          if (found) adj.push(found);
+        }
+      }
+    }
+    return adj;
+  }
+
   public countColours(): { GREEN: number; ORANGE: number } {
     return this.tiles.reduce(
       (acc, tile) => {

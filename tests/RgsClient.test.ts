@@ -75,4 +75,30 @@ describe('LocalRgsClient', () => {
     expect(result.lastRoundWin).toBe(0);
     expect(result.balance).toBe(999); // no win, bet already deducted
   });
+
+  it('applies bomb effect to its tile and all 8 neighbours', async () => {
+    const symbols: Symbol[] = emptySymbols(30);
+    const centerId = '2-2';
+    const centerIndex = makeBaseState().tiles.findIndex((t) => t.id === centerId);
+    symbols[centerIndex] = { type: 'BOMB', colour: 'GREEN' };
+    const rgs = new LocalRgsClient(config, defaultMathConfig, new FixedSymbolSource(symbols));
+    const baseState = makeBaseState();
+
+    const result = await rgs.getSpin(baseState);
+    const tileMap = new Map(result.tiles.map((t) => [t.id, t]));
+    const neighbors = [
+      '1-1',
+      '1-2',
+      '1-3',
+      '2-1',
+      '2-3',
+      '3-1',
+      '3-2',
+      '3-3',
+      centerId
+    ];
+    neighbors.forEach((id) => {
+      expect(tileMap.get(id)?.colour).toBe('GREEN');
+    });
+  });
 });

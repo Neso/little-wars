@@ -83,6 +83,7 @@ export class LocalRgsClient implements RgsClient {
     }
     this.applySoldiers(board);
     this.applyTanks(board, symbols);
+    this.applyBombs(board);
 
     const counts = board.countColours();
     const multipliers = this.calculateMultipliers(counts);
@@ -181,6 +182,17 @@ export class LocalRgsClient implements RgsClient {
       tiles
         .filter((t) => t.row === targetRow && t.col >= tile.col)
         .forEach((t) => board.setTileColour(t.id, symbol.colour));
+    });
+  }
+
+  private applyBombs(board: Board): void {
+    const tiles = board.getTiles();
+    tiles.forEach((tile) => {
+      const symbol = tile.symbol;
+      if (!symbol || symbol.type !== 'BOMB') return;
+      const neighbors = board.getNeighbors8(tile.id);
+      neighbors.forEach((n) => board.setTileColour(n.id, symbol.colour));
+      board.setTileColour(tile.id, symbol.colour);
     });
   }
 
