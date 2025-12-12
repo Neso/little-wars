@@ -98,7 +98,7 @@ const sampleFeatureCount = (weights: FeatureCountWeight[], rng: () => number): n
 const sampleFeatureType = (
   weights: FeatureWeight[],
   rng: () => number
-): 'SOLDIER' | 'TANK' | 'BOMB' => {
+): 'SOLDIER' | 'TANK' | 'BOMB' | 'AEROPLANE' => {
   if (!weights.length) return 'SOLDIER';
   const total = weights.reduce((sum, w) => sum + w.weight, 0);
   if (total <= 0) return 'SOLDIER';
@@ -111,7 +111,7 @@ const sampleFeatureType = (
 };
 
 const sampleFeatureColour = (
-  type: 'SOLDIER' | 'TANK' | 'BOMB',
+  type: 'SOLDIER' | 'TANK' | 'BOMB' | 'AEROPLANE',
   config: MathConfig,
   rng: () => number
 ): Colour => {

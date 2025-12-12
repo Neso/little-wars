@@ -75,7 +75,7 @@ export class LocalRgsClient implements RgsClient {
       }
     });
 
-    // Stage 2: apply flips, soldiers, tanks, then update multipliers.
+    // Stage 2: apply flips, features, then update multipliers.
     if (mathSpin) {
       tileOrder.forEach((tileId, idx) => board.setTileColour(tileId, mathSpin.updatedColours[idx]));
     } else {
@@ -83,6 +83,7 @@ export class LocalRgsClient implements RgsClient {
     }
     this.applySoldiers(board);
     this.applyTanks(board, symbols);
+    this.applyAeroplanes(board, symbols);
     this.applyBombs(board);
 
     const counts = board.countColours();
@@ -181,6 +182,18 @@ export class LocalRgsClient implements RgsClient {
       const targetRow = tile.row;
       tiles
         .filter((t) => t.row === targetRow && t.col >= tile.col)
+        .forEach((t) => board.setTileColour(t.id, symbol.colour));
+    });
+  }
+
+  private applyAeroplanes(board: Board, symbols: Symbol[]): void {
+    const tiles = board.getTiles();
+    symbols.forEach((symbol, index) => {
+      if (symbol.type !== 'AEROPLANE') return;
+      const tile = tiles[index];
+      if (!tile) return;
+      tiles
+        .filter((t) => t.col === tile.col && t.row >= tile.row)
         .forEach((t) => board.setTileColour(t.id, symbol.colour));
     });
   }

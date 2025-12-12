@@ -11,7 +11,7 @@ export interface OppositeCoinCountWeight {
 }
 
 export interface FeatureWeight {
-  type: 'SOLDIER' | 'TANK' | 'BOMB';
+  type: 'SOLDIER' | 'TANK' | 'BOMB' | 'AEROPLANE';
   weight: number;
 }
 
@@ -31,7 +31,10 @@ export interface MathConfig {
   oppositeCoinCountWeights: OppositeCoinCountWeight[];
   featureCountWeights: FeatureCountWeight[];
   featureWeights: FeatureWeight[];
-  featureColourWeights: Record<'SOLDIER' | 'TANK' | 'BOMB', { GREEN: number; ORANGE: number }>;
+  featureColourWeights: Record<
+    'SOLDIER' | 'TANK' | 'BOMB' | 'AEROPLANE',
+    { GREEN: number; ORANGE: number }
+  >;
   colourMultipliers: Record<Colour, { tilesRequired: number; multiplier: number }[]>;
 }
 
@@ -103,14 +106,16 @@ export const defaultMathConfig: MathConfig = {
     { count: 5, weight: 2 }
   ],
   featureWeights: [
-    { type: 'SOLDIER', weight: 70 },
-    { type: 'TANK', weight: 10 },
-    { type: 'BOMB', weight: 20 }
+    { type: 'SOLDIER', weight: 50 },
+    { type: 'TANK', weight: 20 },
+    { type: 'BOMB', weight: 10 },
+    { type: 'AEROPLANE', weight: 20 }
   ],
   featureColourWeights: {
     SOLDIER: { GREEN: 0.5, ORANGE: 0.5 },
     TANK: { GREEN: 0.5, ORANGE: 0.5 },
-    BOMB: { GREEN: 0.5, ORANGE: 0.5 }
+    BOMB: { GREEN: 0.5, ORANGE: 0.5 },
+    AEROPLANE: { GREEN: 0.5, ORANGE: 0.5 }
   },
   colourMultipliers: {
     GREEN: [

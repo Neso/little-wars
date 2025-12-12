@@ -6,7 +6,7 @@
 - Resolution order: bombs are applied after coins and alongside other features in `LocalRgsClient` (after soldiers/tanks in the current flow).
 
 ## Configuration
-- Feature weight: default 20% within `featureWeights` (soldier 70%, tank 10%, bomb 20%).
+- Feature weight: default 10% within `featureWeights` (soldier 50%, tank 20%, aeroplane 20%, bomb 10%).
 - Colour weights: `featureColourWeights.BOMB` defaults to 50/50 GREEN/ORANGE; configurable to bias bomb colour.
 
 ## Placement Flow (math)

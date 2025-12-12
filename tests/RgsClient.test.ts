@@ -101,4 +101,17 @@ describe('LocalRgsClient', () => {
       expect(tileMap.get(id)?.colour).toBe('GREEN');
     });
   });
+
+  it('applies aeroplane effect downwards in its column', async () => {
+    const symbols: Symbol[] = emptySymbols(30);
+    const tileId = '1-1';
+    const idx = makeBaseState().tiles.findIndex((t) => t.id === tileId);
+    symbols[idx] = { type: 'AEROPLANE', colour: 'ORANGE' };
+    const rgs = new LocalRgsClient(config, defaultMathConfig, new FixedSymbolSource(symbols));
+    const baseState = makeBaseState();
+
+    const result = await rgs.getSpin(baseState);
+    const affected = result.tiles.filter((t) => t.col === 1 && t.row >= 1);
+    affected.forEach((t) => expect(t.colour).toBe('ORANGE'));
+  });
 });

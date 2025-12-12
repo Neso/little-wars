@@ -15,6 +15,10 @@ const textures = {
     GREEN: Texture.from(new URL('../assets/symbols/tank-green.png', import.meta.url).href),
     ORANGE: Texture.from(new URL('../assets/symbols/tank-orange.png', import.meta.url).href)
   },
+  aeroplane: {
+    GREEN: Texture.from(new URL('../assets/symbols/plane-green.png', import.meta.url).href),
+    ORANGE: Texture.from(new URL('../assets/symbols/plane-orange.png', import.meta.url).href)
+  },
   bomb: {
     GREEN: Texture.from(new URL('../assets/symbols/bomb-green.png', import.meta.url).href),
     ORANGE: Texture.from(new URL('../assets/symbols/bomb-orange.png', import.meta.url).href)
@@ -271,6 +275,7 @@ export class GameMachine {
     if (symbol?.type === 'COIN') texture = textures.coin[symbol.colour];
     else if (symbol?.type === 'SOLDIER') texture = textures.soldier[symbol.colour];
     else if (symbol?.type === 'TANK') texture = textures.tank[symbol.colour];
+    else if (symbol?.type === 'AEROPLANE') texture = textures.aeroplane[symbol.colour];
     else if (symbol?.type === 'BOMB') texture = textures.bomb[symbol.colour];
     const sprite = new Sprite(texture);
     const desired = tileSize * 0.7;
