@@ -39,7 +39,7 @@ export interface MathConfig {
 }
 
 export const defaultMathConfig: MathConfig = {
-  baseRtp: 0.95,
+  baseRtp: 0.96,
   rows: 5,
   cols: 6,
   matchProbability: 0.25,
@@ -55,12 +55,14 @@ export const defaultMathConfig: MathConfig = {
   coinValueDistribution: {
     GREEN: {
       onOwn: [
-        { value: 1, weight: 0.3 },
-        { value: 2, weight: 0.25 },
-        { value: 3, weight: 0.25 },
-        { value: 25, weight: 0.1 },
-        { value: 50, weight: 0.05 },
-        { value: 100, weight: 0.05 }
+        { value: 1, weight: 0.4 },
+        { value: 2, weight: 0.3 },
+        { value: 3, weight: 0.2 },
+        { value: 5, weight: 0.07 },
+        { value: 10, weight: 0.04 },
+        { value: 25, weight: 0.009 },
+        { value: 50, weight: 0.0009 },
+        { value: 100, weight: 0.0001 }
       ],
       onOpposite: [
         { value: 1, weight: 0.1 },
@@ -73,12 +75,14 @@ export const defaultMathConfig: MathConfig = {
     },
     ORANGE: {
       onOwn: [
-        { value: 1, weight: 0.3 },
-        { value: 2, weight: 0.25 },
-        { value: 3, weight: 0.25 },
-        { value: 25, weight: 0.1 },
-        { value: 50, weight: 0.05 },
-        { value: 100, weight: 0.05 }
+        { value: 1, weight: 0.4 },
+        { value: 2, weight: 0.3 },
+        { value: 3, weight: 0.2 },
+        { value: 5, weight: 0.07 },
+        { value: 10, weight: 0.04 },
+        { value: 25, weight: 0.009 },
+        { value: 50, weight: 0.0009 },
+        { value: 100, weight: 0.0001 }
       ],
       onOpposite: [
         { value: 1, weight: 0.1 },
